@@ -7,8 +7,8 @@
     <ProjectGuid>{6F330076-6C00-4A93-8571-2AB5477FFE3F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SslImplictMail</RootNamespace>
-    <AssemblyName>SslImplictMail</AssemblyName>
+    <RootNamespace>AegisImplictMail</RootNamespace>
+    <AssemblyName>AegisImplictMail</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -64,7 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="SslImplictMail.licenseheader" />
+    <None Include="AegisImplictMail.licenseheader" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="implicitMail.ico" />

@@ -10,7 +10,7 @@ using System.Resources;
 [assembly: AssemblyDescription("Open Source implicit and explicit mime and smime mail library")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Aegis Solutions")]
-[assembly: AssemblyProduct("SslImplicitMail")]
+[assembly: AssemblyProduct("AegisImplicitMail")]
 [assembly: AssemblyCopyright("Copyright © Araz Farhang Dareshuri  2014")]
 [assembly: AssemblyTrademark("Aegis")]
 [assembly: AssemblyCulture("")]

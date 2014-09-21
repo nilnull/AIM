@@ -2,7 +2,7 @@
 using System.Net.Mime;
 using System.Text;
 
-namespace SslImplicitMail
+namespace AegisImplicitMail
 {
     internal class SmimeMessageContent
     {

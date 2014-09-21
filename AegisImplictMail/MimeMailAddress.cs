@@ -4,7 +4,7 @@ using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SslImplicitMail
+namespace AegisImplicitMail
 {
     public class MimeMailAddress : MailAddress, IMailAddress
     {

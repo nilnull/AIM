@@ -80,7 +80,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SslImplictMail\AegisImplicitMail.csproj">
+    <ProjectReference Include="..\AegisImplictMail\AegisImplicitMail.csproj">
       <Project>{6F330076-6C00-4A93-8571-2AB5477FFE3F}</Project>
       <Name>AegisImplicitMail</Name>
     </ProjectReference>

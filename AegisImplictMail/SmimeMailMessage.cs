@@ -8,7 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace SslImplicitMail
+namespace AegisImplicitMail
 {
     /// <summary>
     /// Represents an e-mail message.

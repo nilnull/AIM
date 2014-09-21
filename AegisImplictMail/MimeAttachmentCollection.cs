@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 
 
 
-namespace SslImplicitMail
+namespace AegisImplicitMail
 {
     /// <summary>
     /// A collection of SmtpAttachments
