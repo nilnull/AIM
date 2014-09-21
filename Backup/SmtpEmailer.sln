@@ -1,0 +1,27 @@
+Microsoft Visual Studio Solution File, Format Version 7.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmtpEmailer", "SmtpEmailer\SmtpEmailer.csproj", "{D13063CE-FF5C-430A-9850-2F0394B02AFA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestEmailer", "TestEmailer\TestEmailer.csproj", "{BFB4D862-39AA-42D2-8CA7-ECF01109A211}"
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		ConfigName.0 = Debug
+		ConfigName.1 = Release
+	EndGlobalSection
+	GlobalSection(ProjectDependencies) = postSolution
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{D13063CE-FF5C-430A-9850-2F0394B02AFA}.Debug.ActiveCfg = Debug|.NET
+		{D13063CE-FF5C-430A-9850-2F0394B02AFA}.Debug.Build.0 = Debug|.NET
+		{D13063CE-FF5C-430A-9850-2F0394B02AFA}.Release.ActiveCfg = Release|.NET
+		{D13063CE-FF5C-430A-9850-2F0394B02AFA}.Release.Build.0 = Release|.NET
+		{BFB4D862-39AA-42D2-8CA7-ECF01109A211}.Debug.ActiveCfg = Debug|.NET
+		{BFB4D862-39AA-42D2-8CA7-ECF01109A211}.Debug.Build.0 = Debug|.NET
+		{BFB4D862-39AA-42D2-8CA7-ECF01109A211}.Release.ActiveCfg = Release|.NET
+		{BFB4D862-39AA-42D2-8CA7-ECF01109A211}.Release.Build.0 = Release|.NET
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
