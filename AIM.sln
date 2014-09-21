@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SslImplicitMail", "SslImplictMail\SslImplicitMail.csproj", "{6F330076-6C00-4A93-8571-2AB5477FFE3F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AegisImplicitMail", "AegisImplictMail\AegisImplicitMail.csproj", "{6F330076-6C00-4A93-8571-2AB5477FFE3F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSslMail", "TestSslMail\TestSslMail.csproj", "{9DD8C2BA-F597-44AA-B1D4-9FC581990F27}"
 EndProject

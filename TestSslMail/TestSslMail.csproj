@@ -80,9 +80,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SslImplictMail\SslImplicitMail.csproj">
+    <ProjectReference Include="..\SslImplictMail\AegisImplicitMail.csproj">
       <Project>{6F330076-6C00-4A93-8571-2AB5477FFE3F}</Project>
-      <Name>SslImplicitMail</Name>
+      <Name>AegisImplicitMail</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

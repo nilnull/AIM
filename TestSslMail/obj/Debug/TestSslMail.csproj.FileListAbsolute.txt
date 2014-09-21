@@ -24,3 +24,15 @@ D:\AegisImplicitSsl\TestSslMail\obj\Debug\TestEmailer.AttachType.resources
 D:\AegisImplicitSsl\TestSslMail\obj\Debug\TestSslMail.Form1.resources
 D:\AegisImplicitSsl\TestSslMail\obj\Debug\TestSslMail.Properties.Resources.resources
 D:\AegisImplicitSsl\TestSslMail\obj\Debug\TestSslMail.csproj.GenerateResource.Cache
+D:\AEGIS\AegisImplicitMail\TestSslMail\bin\Debug\TestSslMail.exe.config
+D:\AEGIS\AegisImplicitMail\TestSslMail\obj\Debug\TestSslMail.exe
+D:\AEGIS\AegisImplicitMail\TestSslMail\obj\Debug\TestSslMail.pdb
+D:\AEGIS\AegisImplicitMail\TestSslMail\bin\Debug\TestSslMail.exe
+D:\AEGIS\AegisImplicitMail\TestSslMail\bin\Debug\TestSslMail.pdb
+D:\AEGIS\AegisImplicitMail\TestSslMail\bin\Debug\SslImplictMail.dll
+D:\AEGIS\AegisImplicitMail\TestSslMail\bin\Debug\SslImplictMail.pdb
+D:\AEGIS\AegisImplicitMail\TestSslMail\obj\Debug\TestSslMail.csprojResolveAssemblyReference.cache
+D:\AEGIS\AegisImplicitMail\TestSslMail\obj\Debug\TestEmailer.AttachType.resources
+D:\AEGIS\AegisImplicitMail\TestSslMail\obj\Debug\TestSslMail.Form1.resources
+D:\AEGIS\AegisImplicitMail\TestSslMail\obj\Debug\TestSslMail.Properties.Resources.resources
+D:\AEGIS\AegisImplicitMail\TestSslMail\obj\Debug\TestSslMail.csproj.GenerateResource.Cache
