@@ -14,11 +14,14 @@ using System;
 
 namespace AegisImplicitMail
 {
+    /// <summary>
+    /// A class used to send mime messages
+    /// </summary>
     public class MimeMailMessage : AbstractMailMessage
     {
+        #region Properties
         private MimeAttachmentCollection _attachments;
         private bool _disposed = false;
-
 
         /// <summary>
         /// List of files to attach. 
@@ -41,6 +44,9 @@ namespace AegisImplicitMail
                 return _attachments;
             }
         }
+        #endregion
+
+        #region Methods
 
         protected override void Dispose(bool disposing)
         {
@@ -56,6 +62,7 @@ namespace AegisImplicitMail
             }
 
         }
+#endregion
     }
     
 }

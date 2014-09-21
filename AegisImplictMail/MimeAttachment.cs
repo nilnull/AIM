@@ -13,6 +13,7 @@ namespace AegisImplicitMail
     /// </summary>
     public class MimeAttachment : Attachment
     {
+        #region properties
         internal static int InlineCount;
         internal static int AttachCount;
         private AttachmentLocation _location;
@@ -49,6 +50,9 @@ namespace AegisImplicitMail
             }
         }
 
+#endregion
+
+        #region Constructors
         /// <summary>
         /// Default constructor.
         /// </summary>
@@ -89,6 +93,8 @@ namespace AegisImplicitMail
         }
     
     }
+
+#endregion
     /// <summary>
     /// For use in SmtpAttachment.
     /// </summary>

@@ -24,11 +24,11 @@ using TestEmailer;
 
 namespace TestSslMail
 {
-    public partial class Form1 : Form
+    public partial class MimeMessage : Form
     {
 
 
-        public Form1()
+        public MimeMessage()
         {
             InitializeComponent();
         }
@@ -52,13 +52,23 @@ namespace TestSslMail
 
         private void button2_Click(object sender, System.EventArgs e)
         {
-            SmtpSocketClient emailer = new SmtpSocketClient();
-            emailer.Host = host.Text;
-            emailer.Port = Convert.ToInt16(port.Text);
-            emailer.MailMessage.From = new MailAddress("farhang@scan-associates.net","Araz Farhang");
-            emailer.MailMessage.Subject = subject.Text;
-            emailer.MailMessage.Body = body.Text;
-            emailer.MailMessage.IsBodyHtml = checkHTML.Checked;
+            var hostAddress = host.Text;
+            var portNo = Convert.ToInt16(port.Text);
+            var mailSender = new MimeMailAddress("farhang@scan-associates.net", "Araz Farhang");
+            var subjectText = subject.Text;
+            var bodyText = body.Text;
+            var sendAsHtml = checkHTML.Checked;
+            var mailMessage = new MimeMailMessage();
+            mailMessage.Subject = subjectText;
+            mailMessage.Body = bodyText;
+            mailMessage.Sender = mailSender;
+            mailMessage.IsBodyHtml = sendAsHtml;
+            var emailer = new SmtpSocketClient();
+            emailer.Host = hostAddress;
+            emailer.Port = portNo;
+            emailer.MailMessage = mailMessage;
+            emailer.EnableSsl = true;
+            
             for (int x = 0; x < toList.Count; ++x)
             {
                 emailer.MailMessage.To.Add((MimeMailAddress)toList[x]); 
@@ -159,23 +169,6 @@ namespace TestSslMail
             }
         }
 
-        class human 
-        {
-            public int ghad { get; set; }
-            public void NegahKon(human aHuman)
-            {
-                MessageBox.Show(aHuman.ghad.ToString());
-            }
-        }
-        private void button7_Click(object sender, EventArgs e)
-        {
-            human ehsan  =new human();
-            ehsan.ghad = 120;
-            human asghar = new human();
-            asghar.ghad = 90;
-            ehsan.NegahKon(asghar);
-            MessageBox.Show(ehsan.ghad.ToString());
-        }
     }
 
 

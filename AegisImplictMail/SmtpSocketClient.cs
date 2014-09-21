@@ -403,8 +403,10 @@ namespace AegisImplicitMail
 		/// <summary>
 		/// Send the message on a seperate thread.
 		/// </summary>
-		public void SendMessageAsync(AbstractMailMessage message)
+		public void SendMessageAsync(AbstractMailMessage message = null)
 		{
+		    if (message == null)
+		        message = this.MailMessage;
 			new Thread(()=> SendMessage(message)).Start();
 		}
 

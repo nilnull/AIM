@@ -1,6 +1,6 @@
 ﻿namespace TestSslMail
 {
-    partial class Form1
+    partial class MimeMessage
     {
         /// <summary>
         /// Required designer variable.
@@ -66,7 +66,6 @@
             this.label7 = new System.Windows.Forms.Label();
             this.cc = new System.Windows.Forms.TextBox();
             this.formName = new System.Windows.Forms.TextBox();
-            this.button7 = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -340,7 +339,6 @@
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.button7);
             this.groupBox2.Controls.Add(this.bcc);
             this.groupBox2.Controls.Add(this.label13);
             this.groupBox2.Controls.Add(this.label6);
@@ -432,16 +430,6 @@
             this.formName.Name = "formName";
             this.formName.Size = new System.Drawing.Size(95, 20);
             this.formName.TabIndex = 69;
-            // 
-            // button7
-            // 
-            this.button7.Location = new System.Drawing.Point(330, 22);
-            this.button7.Name = "button7";
-            this.button7.Size = new System.Drawing.Size(75, 23);
-            this.button7.TabIndex = 64;
-            this.button7.Text = "Ehsan";
-            this.button7.UseVisualStyleBackColor = true;
-            this.button7.Click += new System.EventHandler(this.button7_Click);
             // 
             // Form1
             // 
