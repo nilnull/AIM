@@ -21,6 +21,7 @@ using System.Net.Mime;
 using System.Windows.Forms;
 using AegisImplicitMail;
 using TestEmailer;
+using TestSslMail.Dialogs;
 
 namespace TestSslMail
 {
@@ -31,63 +32,100 @@ namespace TestSslMail
         public MimeMessage()
         {
             InitializeComponent();
+           ResetAll();
         }
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
 
-        private void button1_Click(object sender, System.EventArgs e)
+        private void ResetAll()
         {
-            if (to.Text.Trim().Length > 0)
+            ToList = new List<IMailAddress>();
+            CcList = new List<IMailAddress>();
+            BccList = new List<IMailAddress>();
+            _senderMail = null;
+            to.Text = "";
+            cc.Text = "";
+            bcc.Text = "";
+            senderText.Text = "";
+            AttachList = new List<Attachment>();
+
+        }
+        private void button1_Click(object sender, EventArgs e)
+        {
+            var txt = "";
+            var userGetter = new GetUser("Please choose Reciever");
+            if (userGetter.ShowDialog() == DialogResult.OK)
             {
-                toList.Add(new MimeMailAddress(to.Text));
+                if (!String.IsNullOrWhiteSpace(userGetter.DisplayName) &&
+                    !String.IsNullOrWhiteSpace(userGetter.MailAddress))
+                {
+                    txt = userGetter.DisplayName + " " + "<" + userGetter.MailAddress + "> ;";
+
+                    ToList.Add(new MimeMailAddress(userGetter.MailAddress, userGetter.DisplayName));
+                }
+                else if (!String.IsNullOrWhiteSpace(userGetter.MailAddress))
+                {
+                    txt = "<" + userGetter.MailAddress + "> ;";
+
+                    ToList.Add(_senderMail = new MimeMailAddress(userGetter.MailAddress));
+                }
+                to.Text += txt;
             }
+
+
         }
 
-        public List<IMailAddress> toList { get; set; }
-        public List<IMailAddress> ccList { get; set; }
-        public List<IMailAddress> bccList { get; set; }
-        public List<Attachment> attachList { get; set; }
+        private List<IMailAddress> ToList { get; set; }
+        private List<IMailAddress> CcList { get; set; }
+        private List<IMailAddress> BccList { get; set; }
+        private List<Attachment> AttachList { get; set; }
+        private MimeMailAddress _senderMail;
+        private void button2_Click(object sender, EventArgs e)
+        {
+            SendMail();
+        }
 
-        private void button2_Click(object sender, System.EventArgs e)
+        private void SendMailUsingMailer()
         {
             var hostAddress = host.Text;
             var portNo = Convert.ToInt16(port.Text);
-            var mailSender = new MimeMailAddress("farhang@scan-associates.net", "Araz Farhang");
             var subjectText = subject.Text;
             var bodyText = body.Text;
             var sendAsHtml = checkHTML.Checked;
+            var user = userName.Text;
+            var pass = password.Text;
+            MimeMailer mm = new MimeMailer(hostAddress,portNo,user,pass);
+
             var mailMessage = new MimeMailMessage();
+          
             mailMessage.Subject = subjectText;
             mailMessage.Body = bodyText;
-            mailMessage.Sender = mailSender;
+            mailMessage.Sender = _senderMail;
             mailMessage.IsBodyHtml = sendAsHtml;
+            mailMessage.From = _senderMail;
             var emailer = new SmtpSocketClient();
             emailer.Host = hostAddress;
             emailer.Port = portNo;
             emailer.MailMessage = mailMessage;
             emailer.EnableSsl = true;
-            
-            for (int x = 0; x < toList.Count; ++x)
+
+            for (int x = 0; x < ToList.Count; ++x)
             {
-                emailer.MailMessage.To.Add((MimeMailAddress)toList[x]); 
+                emailer.MailMessage.To.Add((MimeMailAddress)ToList[x]);
             }
-            for (int x = 0; x < ccList.Count; ++x)
+            for (int x = 0; x < CcList.Count; ++x)
             {
-                emailer.MailMessage.CC.Add((MimeMailAddress)ccList[x]);
+                emailer.MailMessage.CC.Add((MimeMailAddress)CcList[x]);
             }
-            for (int x = 0; x < bccList.Count; ++x)
+            for (int x = 0; x < BccList.Count; ++x)
             {
-                emailer.MailMessage.Bcc.Add((MimeMailAddress)bccList[x]);
+                emailer.MailMessage.Bcc.Add((MimeMailAddress)BccList[x]);
             }
-            for (int x = 0; x < attachList.Count; ++x)
+            for (int x = 0; x < AttachList.Count; ++x)
             {
-                emailer.MailMessage.Attachments.Add((MimeAttachment)attachList[x]);
+                emailer.MailMessage.Attachments.Add((MimeAttachment)AttachList[x]);
             }
             if (!loginNone.Checked)
             {
-                emailer.User = "farhang";
+                emailer.User = userName.Text;
                 emailer.Password = password.Text;
                 if (loginBase64.Checked)
                 {
@@ -98,28 +136,70 @@ namespace TestSslMail
                     emailer.AuthenticationMode = AuthenticationType.PlainText;
                 }
             }
-            emailer.OnMailSent += new SendCompletedEventHandler(OnMailSent);
-            emailer.SendMessageAsync(emailer.MailMessage);
-            statusBar.Text = "Sending...";
-
+            emailer.SendCompleted += SendCompleted;
+            emailer.SendMailAsync(emailer.MailMessage);
 
         }
 
-        private void OnMailSent(object sender, AsyncCompletedEventArgs asynccompletedeventargs)
+        private void SendMailMicrosoftStyle()
+        {
+            var hostAddress = host.Text;
+            var portNo = Convert.ToInt16(port.Text);
+            var subjectText = subject.Text;
+            var bodyText = body.Text;
+            var sendAsHtml = checkHTML.Checked;
+            var mailMessage = new MimeMailMessage();
+            mailMessage.Subject = subjectText;
+            mailMessage.Body = bodyText;
+            mailMessage.Sender = _senderMail;
+            mailMessage.IsBodyHtml = sendAsHtml;
+            mailMessage.From = _senderMail;
+            var emailer = new SmtpSocketClient();
+            emailer.Host = hostAddress;
+            emailer.Port = portNo;
+            emailer.MailMessage = mailMessage;
+            emailer.EnableSsl = true;
+
+            for (int x = 0; x < ToList.Count; ++x)
+            {
+                emailer.MailMessage.To.Add((MimeMailAddress) ToList[x]);
+            }
+            for (int x = 0; x < CcList.Count; ++x)
+            {
+                emailer.MailMessage.CC.Add((MimeMailAddress) CcList[x]);
+            }
+            for (int x = 0; x < BccList.Count; ++x)
+            {
+                emailer.MailMessage.Bcc.Add((MimeMailAddress) BccList[x]);
+            }
+            for (int x = 0; x < AttachList.Count; ++x)
+            {
+                emailer.MailMessage.Attachments.Add((MimeAttachment) AttachList[x]);
+            }
+            if (!loginNone.Checked)
+            {
+                emailer.User = userName.Text;
+                emailer.Password = password.Text;
+                if (loginBase64.Checked)
+                {
+                    emailer.AuthenticationMode = AuthenticationType.Base64;
+                }
+                else
+                {
+                    emailer.AuthenticationMode = AuthenticationType.PlainText;
+                }
+            }
+            emailer.SendCompleted += SendCompleted;
+            emailer.SendMailAsync(emailer.MailMessage);
+        }
+
+        private void SendCompleted(object sender, AsyncCompletedEventArgs asynccompletedeventargs)
         {
 
             Console.Out.WriteLine(asynccompletedeventargs.UserState.ToString());
         }
 
-        private void OnMailSent(string msg)
-        {
-            Console.Out.WriteLine("result: "+msg);
-         //   statusBar.Text = "Mail sent.";
-        //    MessageBox.Show(this, "The mail has been sent.", "Mail Sent", MessageBoxButtons.OK,
-          //      MessageBoxIcon.Information);
-        }
-
-        private void button3_Click(object sender, System.EventArgs e)
+        private void button3_Click(object sender, EventArgs e)
         {
             OpenFileDialog dlg = new OpenFileDialog();
             dlg.CheckFileExists = true;
@@ -133,40 +213,124 @@ namespace TestSslMail
                 {
                     a.ContentType =  new ContentType(at.contentType.Text);
                     a.Location = at.attachAttachment.Checked ? AttachmentLocation.Attachmed : AttachmentLocation.Inline;
-                    attachList.Add(a);
+                    AttachList.Add(a);
                 }
             }
         }
 
-        private void loginBase64_CheckedChanged(object sender, System.EventArgs e)
+        private void loginBase64_CheckedChanged(object sender, EventArgs e)
         {
-            password.Enabled = true;
+            userName.Enabled = password.Enabled = true;
         }
 
-        private void loginPlain_CheckedChanged(object sender, System.EventArgs e)
+        private void loginPlain_CheckedChanged(object sender,EventArgs e)
         {
-            password.Enabled = true;
+            userName.Enabled = password.Enabled = true;
         }
 
-        private void loginNone_CheckedChanged(object sender, System.EventArgs e)
+        private void loginNone_CheckedChanged(object sender, EventArgs e)
         {
             password.Enabled = false;
+            userName.Enabled = false;
         }
 
-        private void button4_Click(object sender, System.EventArgs e)
+        private void button4_Click(object sender, EventArgs e)
         {
-            if (to.Text.Trim().Length > 0)
+          
+            var txt = "";
+            var userGetter = new GetUser("Please choose CC");
+            if (userGetter.ShowDialog() == DialogResult.OK)
             {
-                ccList.Add(new MimeMailAddress(to.Text)); 
+
+                if (!String.IsNullOrWhiteSpace(userGetter.DisplayName) &&
+                    !String.IsNullOrWhiteSpace(userGetter.MailAddress))
+                {
+                    txt = userGetter.DisplayName + " " + "<" + userGetter.MailAddress + "> ;";
+
+                    CcList.Add(new MimeMailAddress(userGetter.MailAddress, userGetter.DisplayName));
+                }
+                else if (!String.IsNullOrWhiteSpace(userGetter.MailAddress))
+                {
+                    txt = "<" + userGetter.MailAddress + "> ;";
+
+                    CcList.Add(_senderMail = new MimeMailAddress(userGetter.MailAddress));
+                }
+                cc.Text += txt;
+            }
+
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            var txt = "";
+            var userGetter = new GetUser("Please choose BCC");
+            if (userGetter.ShowDialog() == DialogResult.OK)
+            {
+
+                if (!String.IsNullOrWhiteSpace(userGetter.DisplayName) &&
+                    !String.IsNullOrWhiteSpace(userGetter.MailAddress))
+                {
+                    txt = userGetter.DisplayName + " " + "<" + userGetter.MailAddress + "> ;";
+
+                    BccList.Add(new MimeMailAddress(userGetter.MailAddress, userGetter.DisplayName));
+                }
+                else if (!String.IsNullOrWhiteSpace(userGetter.MailAddress))
+                {
+                    txt = "<" + userGetter.MailAddress + "> ;";
+
+                    BccList.Add(_senderMail = new MimeMailAddress(userGetter.MailAddress));
+                }
+                bcc.Text += txt;
             }
         }
 
-        private void button5_Click(object sender, System.EventArgs e)
+        private void button6_Click(object sender, EventArgs e)
         {
-            if (to.Text.Trim().Length > 0)
+            var txt = "";
+            var userGetter = new GetUser("Please choose sender");
+            if (userGetter.ShowDialog() == DialogResult.OK)
             {
-                bccList.Add( new MimeMailAddress(to.Text));
+
+                if (!String.IsNullOrWhiteSpace(userGetter.DisplayName) &&
+                    !String.IsNullOrWhiteSpace(userGetter.MailAddress))
+                {
+                    txt = userGetter.DisplayName + " " + "<" + userGetter.MailAddress + "> ;";
+
+                    _senderMail = new MimeMailAddress(userGetter.MailAddress, userGetter.DisplayName);
+                }
+                else if (!String.IsNullOrWhiteSpace(userGetter.MailAddress))
+                {
+                    txt = "<" + userGetter.MailAddress + "> ;";
+
+                    _senderMail = new MimeMailAddress(userGetter.MailAddress);
+                }
+                senderText.Text = txt;
             }
+        }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            ToList = new List<IMailAddress>();
+            to.Text = "";
+        }
+
+        private void button9_Click(object sender, EventArgs e)
+        {
+            CcList = new List<IMailAddress>();
+            cc.Text = "";
+
+        }
+
+        private void button10_Click(object sender, EventArgs e)
+        {
+            BccList = new List<IMailAddress>();
+            bcc.Text = "";
+
+        }
+
+        private void button11_Click(object sender, EventArgs e)
+        {
+            ResetAll();
         }
 
     }

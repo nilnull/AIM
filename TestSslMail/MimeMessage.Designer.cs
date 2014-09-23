@@ -54,18 +54,17 @@
             this.to = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
-            this.from = new System.Windows.Forms.TextBox();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.bcc = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
+            this.cc = new System.Windows.Forms.TextBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.senderText = new System.Windows.Forms.TextBox();
             this.button6 = new System.Windows.Forms.Button();
             this.label7 = new System.Windows.Forms.Label();
-            this.cc = new System.Windows.Forms.TextBox();
-            this.formName = new System.Windows.Forms.TextBox();
+            this.button11 = new System.Windows.Forms.Button();
+            this.useSsl = new System.Windows.Forms.RadioButton();
             this.groupBox1.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -74,25 +73,25 @@
             // 
             // button5
             // 
-            this.button5.Location = new System.Drawing.Point(247, 75);
+            this.button5.Location = new System.Drawing.Point(443, 66);
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(25, 23);
-            this.button5.TabIndex = 62;
+            this.button5.TabIndex = 5;
             this.button5.Text = "+";
             this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
             // loginPlain
             // 
-            this.loginPlain.Location = new System.Drawing.Point(210, 16);
+            this.loginPlain.Location = new System.Drawing.Point(133, 16);
             this.loginPlain.Name = "loginPlain";
-            this.loginPlain.Size = new System.Drawing.Size(104, 24);
-            this.loginPlain.TabIndex = 2;
+            this.loginPlain.Size = new System.Drawing.Size(79, 24);
+            this.loginPlain.TabIndex = 0;
             this.loginPlain.Text = "Plain Text";
             this.loginPlain.CheckedChanged += new System.EventHandler(this.loginPlain_CheckedChanged);
             // 
             // loginBase64
             // 
-            this.loginBase64.Location = new System.Drawing.Point(385, 16);
+            this.loginBase64.Location = new System.Drawing.Point(218, 16);
             this.loginBase64.Name = "loginBase64";
             this.loginBase64.Size = new System.Drawing.Size(72, 24);
             this.loginBase64.TabIndex = 1;
@@ -113,10 +112,10 @@
             // 
             // button4
             // 
-            this.button4.Location = new System.Drawing.Point(247, 49);
+            this.button4.Location = new System.Drawing.Point(443, 40);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(25, 23);
-            this.button4.TabIndex = 61;
+            this.button4.TabIndex = 3;
             this.button4.Text = "+";
             this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
@@ -127,7 +126,7 @@
             this.password.Name = "password";
             this.password.PasswordChar = '*';
             this.password.Size = new System.Drawing.Size(127, 20);
-            this.password.TabIndex = 45;
+            this.password.TabIndex = 4;
             // 
             // label10
             // 
@@ -147,6 +146,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.useSsl);
             this.groupBox1.Controls.Add(this.label10);
             this.groupBox1.Controls.Add(this.host);
             this.groupBox1.Controls.Add(this.userName);
@@ -159,36 +159,33 @@
             this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(495, 129);
-            this.groupBox1.TabIndex = 43;
+            this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Setup";
             // 
             // host
             // 
-            this.host.Enabled = false;
             this.host.Location = new System.Drawing.Point(54, 17);
             this.host.Name = "host";
-            this.host.PasswordChar = '*';
             this.host.Size = new System.Drawing.Size(129, 20);
-            this.host.TabIndex = 57;
+            this.host.TabIndex = 1;
             // 
             // userName
             // 
             this.userName.Enabled = false;
             this.userName.Location = new System.Drawing.Point(54, 44);
             this.userName.Name = "userName";
-            this.userName.PasswordChar = '*';
             this.userName.Size = new System.Drawing.Size(127, 20);
-            this.userName.TabIndex = 56;
+            this.userName.TabIndex = 3;
             // 
             // port
             // 
-            this.port.Enabled = false;
             this.port.Location = new System.Drawing.Point(190, 18);
             this.port.Name = "port";
             this.port.PasswordChar = '*';
             this.port.Size = new System.Drawing.Size(28, 20);
-            this.port.TabIndex = 55;
+            this.port.TabIndex = 2;
+            this.port.Text = "465";
             // 
             // label2
             // 
@@ -213,35 +210,35 @@
             this.groupBox4.Controls.Add(this.loginBase64);
             this.groupBox4.Location = new System.Drawing.Point(6, 74);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(483, 46);
-            this.groupBox4.TabIndex = 58;
+            this.groupBox4.Size = new System.Drawing.Size(301, 46);
+            this.groupBox4.TabIndex = 5;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Login Type";
             // 
             // checkHTML
             // 
-            this.checkHTML.Location = new System.Drawing.Point(63, 281);
+            this.checkHTML.Location = new System.Drawing.Point(375, 259);
             this.checkHTML.Name = "checkHTML";
             this.checkHTML.Size = new System.Drawing.Size(104, 24);
-            this.checkHTML.TabIndex = 54;
+            this.checkHTML.TabIndex = 6;
             this.checkHTML.Text = "Send as HTML";
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(405, 13);
+            this.button3.Location = new System.Drawing.Point(350, 292);
             this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(84, 23);
-            this.button3.TabIndex = 53;
+            this.button3.Size = new System.Drawing.Size(129, 23);
+            this.button3.TabIndex = 5;
             this.button3.Text = "Add Attachments";
             this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
             // statusBar
             // 
-            this.statusBar.Location = new System.Drawing.Point(0, 504);
+            this.statusBar.Location = new System.Drawing.Point(0, 511);
             this.statusBar.Name = "statusBar";
-            this.statusBar.Size = new System.Drawing.Size(524, 22);
+            this.statusBar.Size = new System.Drawing.Size(518, 22);
             this.statusBar.SizingGrip = false;
-            this.statusBar.TabIndex = 50;
+            this.statusBar.TabIndex = 4;
             this.statusBar.Text = "Ready.";
             // 
             // button2
@@ -249,7 +246,7 @@
             this.button2.Location = new System.Drawing.Point(432, 474);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 23);
-            this.button2.TabIndex = 47;
+            this.button2.TabIndex = 2;
             this.button2.Text = "Send";
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
@@ -257,22 +254,22 @@
             // 
             this.body.AcceptsReturn = true;
             this.body.AcceptsTab = true;
-            this.body.Location = new System.Drawing.Point(63, 202);
+            this.body.Location = new System.Drawing.Point(63, 176);
             this.body.Multiline = true;
             this.body.Name = "body";
-            this.body.Size = new System.Drawing.Size(400, 77);
-            this.body.TabIndex = 37;
+            this.body.Size = new System.Drawing.Size(416, 77);
+            this.body.TabIndex = 4;
             // 
             // subject
             // 
-            this.subject.Location = new System.Drawing.Point(67, 161);
+            this.subject.Location = new System.Drawing.Point(63, 150);
             this.subject.Name = "subject";
-            this.subject.Size = new System.Drawing.Size(193, 20);
-            this.subject.TabIndex = 36;
+            this.subject.Size = new System.Drawing.Size(416, 20);
+            this.subject.TabIndex = 3;
             // 
             // label5
             // 
-            this.label5.Location = new System.Drawing.Point(13, 165);
+            this.label5.Location = new System.Drawing.Point(15, 153);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(48, 16);
             this.label5.TabIndex = 46;
@@ -280,23 +277,24 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(247, 23);
+            this.button1.Location = new System.Drawing.Point(443, 17);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(25, 23);
-            this.button1.TabIndex = 35;
+            this.button1.TabIndex = 1;
             this.button1.Text = "+";
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // to
             // 
-            this.to.Location = new System.Drawing.Point(48, 25);
+            this.to.Enabled = false;
+            this.to.Location = new System.Drawing.Point(48, 18);
             this.to.Name = "to";
-            this.to.Size = new System.Drawing.Size(193, 20);
-            this.to.TabIndex = 33;
+            this.to.Size = new System.Drawing.Size(389, 20);
+            this.to.TabIndex = 0;
             // 
             // label4
             // 
-            this.label4.Location = new System.Drawing.Point(6, 29);
+            this.label4.Location = new System.Drawing.Point(6, 22);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(40, 16);
             this.label4.TabIndex = 41;
@@ -304,38 +302,11 @@
             // 
             // label3
             // 
-            this.label3.Location = new System.Drawing.Point(21, 20);
+            this.label3.Location = new System.Drawing.Point(17, 129);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(40, 16);
             this.label3.TabIndex = 38;
             this.label3.Text = "From";
-            // 
-            // from
-            // 
-            this.from.Location = new System.Drawing.Point(155, 16);
-            this.from.Name = "from";
-            this.from.Size = new System.Drawing.Size(213, 20);
-            this.from.TabIndex = 63;
-            // 
-            // checkBox1
-            // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(173, 285);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(70, 17);
-            this.checkBox1.TabIndex = 64;
-            this.checkBox1.Text = "Is Signed";
-            this.checkBox1.UseVisualStyleBackColor = true;
-            // 
-            // checkBox2
-            // 
-            this.checkBox2.AutoSize = true;
-            this.checkBox2.Location = new System.Drawing.Point(249, 285);
-            this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(84, 17);
-            this.checkBox2.TabIndex = 65;
-            this.checkBox2.Text = "is Encrypted";
-            this.checkBox2.UseVisualStyleBackColor = true;
             // 
             // groupBox2
             // 
@@ -348,23 +319,24 @@
             this.groupBox2.Controls.Add(this.button4);
             this.groupBox2.Controls.Add(this.to);
             this.groupBox2.Controls.Add(this.button1);
-            this.groupBox2.Location = new System.Drawing.Point(15, 42);
+            this.groupBox2.Location = new System.Drawing.Point(11, 19);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(474, 114);
-            this.groupBox2.TabIndex = 66;
+            this.groupBox2.Size = new System.Drawing.Size(474, 100);
+            this.groupBox2.TabIndex = 0;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Recipients";
             // 
             // bcc
             // 
-            this.bcc.Location = new System.Drawing.Point(48, 77);
+            this.bcc.Enabled = false;
+            this.bcc.Location = new System.Drawing.Point(48, 70);
             this.bcc.Name = "bcc";
-            this.bcc.Size = new System.Drawing.Size(193, 20);
-            this.bcc.TabIndex = 44;
+            this.bcc.Size = new System.Drawing.Size(389, 20);
+            this.bcc.TabIndex = 4;
             // 
             // label13
             // 
-            this.label13.Location = new System.Drawing.Point(8, 80);
+            this.label13.Location = new System.Drawing.Point(8, 73);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(40, 16);
             this.label13.TabIndex = 43;
@@ -372,76 +344,92 @@
             // 
             // label6
             // 
-            this.label6.Location = new System.Drawing.Point(8, 54);
+            this.label6.Location = new System.Drawing.Point(8, 47);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(40, 16);
             this.label6.TabIndex = 42;
             this.label6.Text = "CC:";
             // 
+            // cc
+            // 
+            this.cc.Enabled = false;
+            this.cc.Location = new System.Drawing.Point(48, 43);
+            this.cc.Name = "cc";
+            this.cc.Size = new System.Drawing.Size(389, 20);
+            this.cc.TabIndex = 2;
+            // 
             // groupBox3
             // 
-            this.groupBox3.Controls.Add(this.formName);
-            this.groupBox3.Controls.Add(this.checkBox2);
+            this.groupBox3.Controls.Add(this.senderText);
             this.groupBox3.Controls.Add(this.button6);
-            this.groupBox3.Controls.Add(this.checkBox1);
+            this.groupBox3.Controls.Add(this.button3);
             this.groupBox3.Controls.Add(this.label7);
             this.groupBox3.Controls.Add(this.label3);
-            this.groupBox3.Controls.Add(this.from);
             this.groupBox3.Controls.Add(this.subject);
             this.groupBox3.Controls.Add(this.groupBox2);
             this.groupBox3.Controls.Add(this.label5);
             this.groupBox3.Controls.Add(this.body);
             this.groupBox3.Controls.Add(this.checkHTML);
-            this.groupBox3.Controls.Add(this.button3);
             this.groupBox3.Location = new System.Drawing.Point(12, 147);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(495, 321);
-            this.groupBox3.TabIndex = 67;
+            this.groupBox3.TabIndex = 1;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Mail Message";
             // 
+            // senderText
+            // 
+            this.senderText.Enabled = false;
+            this.senderText.Location = new System.Drawing.Point(63, 125);
+            this.senderText.Name = "senderText";
+            this.senderText.Size = new System.Drawing.Size(385, 20);
+            this.senderText.TabIndex = 1;
+            // 
             // button6
             // 
-            this.button6.Enabled = false;
-            this.button6.Location = new System.Drawing.Point(374, 13);
+            this.button6.Location = new System.Drawing.Point(454, 123);
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(25, 23);
-            this.button6.TabIndex = 68;
+            this.button6.TabIndex = 2;
             this.button6.Text = "+";
+            this.button6.Click += new System.EventHandler(this.button6_Click);
             // 
             // label7
             // 
-            this.label7.Location = new System.Drawing.Point(15, 202);
+            this.label7.Location = new System.Drawing.Point(14, 179);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(48, 16);
             this.label7.TabIndex = 67;
             this.label7.Text = "Body";
             // 
-            // cc
+            // button11
             // 
-            this.cc.Location = new System.Drawing.Point(48, 50);
-            this.cc.Name = "cc";
-            this.cc.Size = new System.Drawing.Size(193, 20);
-            this.cc.TabIndex = 63;
+            this.button11.Location = new System.Drawing.Point(351, 474);
+            this.button11.Name = "button11";
+            this.button11.Size = new System.Drawing.Size(75, 23);
+            this.button11.TabIndex = 3;
+            this.button11.Text = "Reset";
+            this.button11.Click += new System.EventHandler(this.button11_Click);
             // 
-            // formName
+            // useSsl
             // 
-            this.formName.Location = new System.Drawing.Point(54, 16);
-            this.formName.Name = "formName";
-            this.formName.Size = new System.Drawing.Size(95, 20);
-            this.formName.TabIndex = 69;
+            this.useSsl.Location = new System.Drawing.Point(438, 90);
+            this.useSsl.Name = "useSsl";
+            this.useSsl.Size = new System.Drawing.Size(49, 24);
+            this.useSsl.TabIndex = 57;
+            this.useSsl.Text = "IsSsl";
             // 
-            // Form1
+            // MimeMessage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(524, 526);
+            this.ClientSize = new System.Drawing.Size(518, 533);
+            this.Controls.Add(this.button11);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.statusBar);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.groupBox3);
-            this.Name = "Form1";
-            this.Text = "Form1";
+            this.Name = "MimeMessage";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox4.ResumeLayout(false);
@@ -479,9 +467,6 @@
         private System.Windows.Forms.TextBox host;
         private System.Windows.Forms.TextBox userName;
         private System.Windows.Forms.TextBox port;
-        private System.Windows.Forms.TextBox from;
-        private System.Windows.Forms.CheckBox checkBox1;
-        private System.Windows.Forms.CheckBox checkBox2;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.TextBox bcc;
         private System.Windows.Forms.Label label13;
@@ -492,8 +477,10 @@
         private System.Windows.Forms.TextBox cc;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.GroupBox groupBox4;
-        private System.Windows.Forms.TextBox formName;
+        private System.Windows.Forms.TextBox senderText;
         private System.Windows.Forms.Button button7;
+        private System.Windows.Forms.Button button11;
+        private System.Windows.Forms.RadioButton useSsl;
     }
 }
 

@@ -15,55 +15,43 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Mail;
+using System.Runtime.Remoting.Messaging;
 
 namespace AegisImplicitMail
 {
     /// <summary>
     /// Generate Mime Messages
     /// </summary>
-    class MimeMailer : IMailer
+    public class MimeMailer :SmtpSocketClient, IMailer 
     {
-        /// <summary>
-        /// Server Password
-        /// </summary>
-        private string _passWord;
-        /// <summary>
-        /// Show if server is using ssl or not
-        /// </summary>
-        private bool _isSsl;
-        /// <summary>
-        /// Port number of server
-        /// </summary>
-        private int _port;
 
-        /// <summary>
-        /// User name of user's mail
-        /// </summary>
-        private string _userName;
-
-        /// <summary>
-        /// Url address of mail server
-        /// </summary>
-        private string _host;
+        public NetworkCredential Credentials
+        {
+            get
+            {
+                return new NetworkCredential(User,Password);
+            }
+            set
+            {
+                User = value.UserName;
+                Password = value.Password;
+            }
+        }
 
         /// <summary>
         /// Indecate if we need to send mail as html or plain text
         /// </summary>
         private readonly bool _useHtml;
 
-        /// <summary>
-        /// Display name of sender
-        /// </summary>
-        private readonly string _senderDisplayName;
-        /// <summary>
-        /// Email Address of sender
-        /// </summary>
-        private readonly string _senderEmailAddresss;
+
         /// <summary>
         /// Indicate if ssl server is implicit server or explicit
         /// </summary>
         private readonly bool _implictSsl;
+
+        private readonly AuthenticationType _authenticationType;
 
         /// <summary>
         /// Priority of email
@@ -83,23 +71,36 @@ namespace AegisImplicitMail
         /// <param name="useHtml">Are we going to send this email as a html message or a plain text?</param>
         /// <param name="implictSsl">Indicate if the ssl is an implict ssl</param>
         /// <param name="messagePriority">Priority of message</param>
-        public MimeMailer(string host, int port, string userName, string passWord, bool isSsl, string senderDisplayName, string senderEmailAddresss, bool useHtml, bool implictSsl, MailPriority messagePriority)
+        public MimeMailer(string host, int port = 465, string userName = null, string passWord ="", bool isSsl = false, bool implictSsl = false, MailPriority messagePriority = MailPriority.Normal, AuthenticationType authenticationType = AuthenticationType.PlainText):base(host,port)
         {
-            _host = host;
-            _port = port;
-            _userName = userName;
-            _passWord = passWord;
-            _isSsl = isSsl;
-            _senderDisplayName = senderDisplayName;
-            _senderEmailAddresss = senderEmailAddresss;
-            _useHtml = useHtml;
+            Host = host;
+            Port = port;
+            User = userName;
+            Password = passWord;
+            EnableSsl = isSsl;
             _implictSsl = implictSsl;
             _messagePriority = messagePriority;
+            _authenticationType = authenticationType;
         }
+
+        public MimeMailer(string host):base(host)
+        {
+            
+        }
+
+        public MimeMailer(string host, int port):base(host,port)
+        {
+        }
+
+        public MimeMailer()
+        {
+        }
+
 
         /// <summary>
         /// Generate ann email message
         /// </summary>
+        /// <param name="sender">From field of mail</param>
         /// <param name="toAddresses">Recievers</param>
         /// <param name="ccAddresses">CC list</param>
         /// <param name="bccAddresses">BCC List</param>
@@ -107,14 +108,12 @@ namespace AegisImplicitMail
         /// <param name="subject">Subject of email</param>
         /// <param name="body">Message's busy</param>
         /// <returns>Generated message</returns>
-        public AbstractMailMessage GenerateMail(List<IMailAddress> toAddresses, List<IMailAddress> ccAddresses, List<IMailAddress> bccAddresses, List<string> attachmentsList,
+        public AbstractMailMessage GenerateMail(IMailAddress sender, List<IMailAddress> toAddresses, List<IMailAddress> ccAddresses, List<IMailAddress> bccAddresses, List<string> attachmentsList,
             string subject, string body)
         {
-            if (_implictSsl)
-            {
                 var msg = new MimeMailMessage
                 {
-                    From = new MailAddress(_senderEmailAddresss, _senderDisplayName),
+                    From = (MailAddress)sender,
                     Subject = subject,
                     Body = body,
                     IsBodyHtml = _useHtml
@@ -126,11 +125,6 @@ namespace AegisImplicitMail
                 if (attachmentsList != null)
                     attachmentsList.ForEach(a => msg.Attachments.Add(new MimeAttachment(a)));
                 return msg;
-            }
-            else
-            {
-                throw new NotImplementedException();
-            }
         }
 
         /// <summary>
@@ -140,7 +134,42 @@ namespace AegisImplicitMail
         /// <param name="onSendCallBack">The deligated function which will be called after sending message.</param>
         public void Send(AbstractMailMessage message, SendCompletedEventHandler onSendCallBack)
         {
-            throw new NotImplementedException();
+
+            if (_implictSsl)
+            {
+                SendCompleted += onSendCallBack;
+                SendMailAsync(message);
+                // Connecting to the server and configuring it
+                using (var client = new SmtpSocketClient())
+                {
+                    Host = Host;
+                    Port = Port;
+                    EnableSsl = EnableSsl;
+                    if (String.IsNullOrEmpty(User))
+                        AuthenticationMode = AuthenticationType.UseDefualtCridentials;
+                }
+            }
+            else
+            {
+                using (var client = new SmtpClient())
+                {
+                 
+                    client.Host = Host;
+                    client.Port = Port;
+                    client.EnableSsl = EnableSsl;
+                    if (String.IsNullOrEmpty(User))
+                        client.UseDefaultCredentials =true;
+                    else
+                    {
+                        client.Credentials = new NetworkCredential(User,Password);
+                    }
+                    client.SendCompleted += onSendCallBack;
+                    client.SendMailAsync(message);
+                  
+                }
+                
+            }
+
         }
     }
 }

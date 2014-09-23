@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.Net.Mail;
 using System.Net.Mime;
@@ -22,7 +21,7 @@ namespace AegisImplicitMail
         /// </summary>
         public SmimeMailMessage()
         {
-            InternalMailMessage = new System.Net.Mail.MailMessage();
+       //    InternalMailMessage = new System.Net.Mail.MailMessage();
             To = new SmimeMailAddressCollection();
             CC = new SmimeMailAddressCollection();
             Bcc = new SmimeMailAddressCollection();
@@ -59,169 +58,40 @@ namespace AegisImplicitMail
         /// <param name="to">The addresses of the recipients of the e-mail message.</param>
         /// <param name="subject">The subject text of the e-mail message.</param>
         /// <param name="body">The body of the e-mail message.</param>
-        public SmimeMailMessage(string from, string to, string subject, string body)
-            : this()
+        public SmimeMailMessage(string from, string to, string subject, string body):base(from,to,subject,body)
         {
             From = new SmimeMailAddress(from);
             To.Add(to);
-            InternalMailMessage.Subject = subject;
-            InternalMailMessage.Body = body;
         }
 
         # endregion
 
         # region Properties
-
-        /// <summary>
-        /// Gets a list of the message's attachments.
-        /// </summary>
-        public AttachmentCollection Attachments
-        {
-            get;
-            private set;
-        }
-
+      
         /// <summary>
         /// Gets a list of the addresses to be blind copied.
         /// </summary>
-        public SmimeMailAddressCollection Bcc
+        public new SmimeMailAddressCollection Bcc
         {
             get;
             private set;
         }
 
-        /// <summary>
-        /// Gets or sets the body of the e-mail message.
-        /// </summary>
-        public string Body
-        {
-            get
-            {
-                return InternalMailMessage.Body;
-            }
-            set
-            {
-                InternalMailMessage.Body = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the encoding of the body.
-        /// </summary>
-        public Encoding BodyEncoding
-        {
-            get
-            {
-                return InternalMailMessage.BodyEncoding;
-            }
-            set
-            {
-                InternalMailMessage.BodyEncoding = value;
-            }
-        }
+      
 
         /// <summary>
         /// Gets a list of addresses to be CC'd.
         /// </summary>
-        public SmimeMailAddressCollection CC
+        public new SmimeMailAddressCollection CC
         {
             get;
             private set;
-        }
-
-        /// <summary>
-        /// Gets or sets the message's notification options.
-        /// </summary>
-        public System.Net.Mail.DeliveryNotificationOptions DeliveryNotificationOptions
-        {
-            get
-            {
-                return InternalMailMessage.DeliveryNotificationOptions;
-            }
-            set
-            {
-                InternalMailMessage.DeliveryNotificationOptions = value;
-            }
         }
 
         /// <summary>
         /// Gets or sets the address that the message will be sent from.
         /// </summary>
-        public SmimeMailAddress From
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Gets a list of the headers of the message.
-        /// </summary>
-        public NameValueCollection Headers
-        {
-            get
-            {
-                return InternalMailMessage.Headers;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets whether the message body should be interpreted as HTML.
-        /// </summary>
-        public bool IsBodyHtml
-        {
-            get
-            {
-                return InternalMailMessage.IsBodyHtml;
-            }
-            set
-            {
-                InternalMailMessage.IsBodyHtml = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the priority of the message.
-        /// </summary>
-        public MailPriority Priority
-        {
-            get
-            {
-                switch (InternalMailMessage.Priority)
-                {
-                    case System.Net.Mail.MailPriority.Normal:
-                        return MailPriority.Normal;
-                    case System.Net.Mail.MailPriority.Low:
-                        return MailPriority.Low;
-                    case System.Net.Mail.MailPriority.High:
-                        return MailPriority.High;
-                    default:
-                        return (MailPriority)InternalMailMessage.Priority;
-                }
-            }
-            set
-            {
-                switch (value)
-                {
-                    case MailPriority.Normal:
-                        InternalMailMessage.Priority = System.Net.Mail.MailPriority.Normal;
-                        break;
-                    case MailPriority.Low:
-                        InternalMailMessage.Priority = System.Net.Mail.MailPriority.Low;
-                        break;
-                    case MailPriority.High:
-                        InternalMailMessage.Priority = System.Net.Mail.MailPriority.High;
-                        break;
-                    default:
-                        InternalMailMessage.Priority = (System.Net.Mail.MailPriority)value;
-                        break;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the message's reply-to address.
-        /// </summary>
-        public SmimeMailAddress ReplyTo
+        public new SmimeMailAddress From
         {
             get;
             set;
@@ -234,36 +104,6 @@ namespace AegisImplicitMail
         {
             get;
             set;
-        }
-
-        /// <summary>
-        /// Gets or sets the subject of the message.
-        /// </summary>
-        public string Subject
-        {
-            get
-            {
-                return InternalMailMessage.Subject;
-            }
-            set
-            {
-                InternalMailMessage.Subject = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the encoding of the message subject.
-        /// </summary>
-        public Encoding SubjectEncoding
-        {
-            get
-            {
-                return InternalMailMessage.SubjectEncoding;
-            }
-            set
-            {
-                InternalMailMessage.SubjectEncoding = value;
-            }
         }
 
         /// <summary>
@@ -303,13 +143,6 @@ namespace AegisImplicitMail
             get;
             set;
         }
-
-        internal System.Net.Mail.MailMessage InternalMailMessage
-        {
-            get;
-            private set;
-        }
-
         # endregion
 
         # region Methods
@@ -318,15 +151,15 @@ namespace AegisImplicitMail
         private SmimeMessageContent GetUnsignedContent()
         {
 
-            ContentType bodyType = new ContentType();
+            var bodyType = new ContentType();
 
-            bodyType.MediaType = this.IsBodyHtml ? "text/html" : "text/plain";
+            bodyType.MediaType = IsBodyHtml ? "text/html" : "text/plain";
 
             bodyType.CharSet = BodyEncoding.BodyName;
 
             TransferEncoding bodyTransferEncoding;
 
-            Encoding bodyEncoding = BodyEncoding ?? Encoding.ASCII;
+            var bodyEncoding = BodyEncoding ?? Encoding.ASCII;
 
             if (bodyEncoding == Encoding.ASCII || bodyEncoding == Encoding.UTF8)
             {
@@ -338,57 +171,58 @@ namespace AegisImplicitMail
             }
 
 
-            SmimeMessageContent bodyContent = new SmimeMessageContent(
-                bodyEncoding.GetBytes(this.Body),
+            var bodyContent = new SmimeMessageContent(
+                bodyEncoding.GetBytes(Body),
                 bodyType,
                 bodyTransferEncoding,
                 IsMultipart || IsEncrypted);
 
-            if (this.Attachments.Count == 0)
+            if (Attachments.Count == 0)
             {
                 return bodyContent;
             }
-            else
-            {
-                ContentType bodyWithAttachmentsType = new ContentType("multipart/mixed");
-                bodyWithAttachmentsType.Boundary = Helpers.GenerateBoundary();
+            var bodyWithAttachmentsType = new ContentType("multipart/mixed");
+            bodyWithAttachmentsType.Boundary = Helpers.GenerateBoundary();
 
-                StringBuilder message = new StringBuilder();
-                message.Append("\r\n");
+            StringBuilder message = new StringBuilder();
+            message.Append("\r\n");
+            message.Append("--");
+            message.Append(bodyWithAttachmentsType.Boundary);
+            message.Append("\r\n");
+            message.Append("Content-Type: ");
+            message.Append(bodyContent.ContentType.ToString());
+            message.Append("\r\n");
+            message.Append("Content-Transfer-Encoding: ");
+            message.Append(TransferEncoder.GetTransferEncodingName(bodyContent.TransferEncoding));
+            message.Append("\r\n\r\n");
+            message.Append(Encoding.ASCII.GetString(bodyContent.Body));
+            message.Append("\r\n");
+
+            foreach (Attachment attachment in Attachments)
+            {
                 message.Append("--");
                 message.Append(bodyWithAttachmentsType.Boundary);
                 message.Append("\r\n");
                 message.Append("Content-Type: ");
-                message.Append(bodyContent.ContentType.ToString());
+                message.Append(attachment.ContentType.ToString());
                 message.Append("\r\n");
-                message.Append("Content-Transfer-Encoding: ");
-                message.Append(TransferEncoder.GetTransferEncodingName(bodyContent.TransferEncoding));
+                message.Append("Content-Transfer-Encoding: base64\r\n\r\n");
+                message.Append(TransferEncoder.ToBase64(Helpers.ReadAttachment(attachment)));
                 message.Append("\r\n\r\n");
-                message.Append(Encoding.ASCII.GetString(bodyContent.Body));
-                message.Append("\r\n");
-
-                foreach (Attachment attachment in Attachments)
-                {
-                    message.Append("--");
-                    message.Append(bodyWithAttachmentsType.Boundary);
-                    message.Append("\r\n");
-                    message.Append("Content-Type: ");
-                    message.Append(attachment.ContentType.ToString());
-                    message.Append("\r\n");
-                    message.Append("Content-Transfer-Encoding: base64\r\n\r\n");
-                    message.Append(TransferEncoder.ToBase64(Helpers.ReadAttachment(attachment)));
-                    message.Append("\r\n\r\n");
-                }
-
-                message.Append("--");
-                message.Append(bodyWithAttachmentsType.Boundary);
-                message.Append("--\r\n");
-
-                return new SmimeMessageContent(Encoding.ASCII.GetBytes(message.ToString()), bodyWithAttachmentsType, TransferEncoding.SevenBit, false);
-
             }
+
+            message.Append("--");
+            message.Append(bodyWithAttachmentsType.Boundary);
+            message.Append("--\r\n");
+
+            return new SmimeMessageContent(Encoding.ASCII.GetBytes(message.ToString()), bodyWithAttachmentsType, TransferEncoding.SevenBit, false);
         }
 
+        /// <summary>
+        /// Sign the message, It convert mail message to smime
+        /// </summary>
+        /// <param name="unsignedContent">Original message</param>
+        /// <returns>Smime</returns>
         private SmimeMessageContent SignContent(SmimeMessageContent unsignedContent)
         {
             if (From.SigningCertificate == null)
@@ -396,43 +230,43 @@ namespace AegisImplicitMail
                 throw new InvalidOperationException("Can't sign message unless the From property contains a signing certificate.");
             }
 
-            ContentType signedContentType = new ContentType("multipart/signed; protocol=\"application/x-pkcs7-signature\"; micalg=SHA1; ");
+            var signedContentType = new ContentType("multipart/signed; protocol=\"application/x-pkcs7-signature\"; micalg=SHA1; ");
             signedContentType.Boundary = Helpers.GenerateBoundary();
 
-            StringBuilder fullUnsignedMessageBuilder = new StringBuilder();
-            fullUnsignedMessageBuilder.Append("Content-Type: ");
-            fullUnsignedMessageBuilder.Append(unsignedContent.ContentType.ToString());
-            fullUnsignedMessageBuilder.Append("\r\n");
-            fullUnsignedMessageBuilder.Append("Content-Transfer-Encoding: ");
-            fullUnsignedMessageBuilder.Append(TransferEncoder.GetTransferEncodingName(unsignedContent.TransferEncoding));
-            fullUnsignedMessageBuilder.Append("\r\n\r\n");
-            fullUnsignedMessageBuilder.Append(Encoding.ASCII.GetString(unsignedContent.Body));
+            var unsignedStringBuilder = new StringBuilder();
+            unsignedStringBuilder.Append("Content-Type: ");
+            unsignedStringBuilder.Append(unsignedContent.ContentType.ToString());
+            unsignedStringBuilder.Append("\r\n");
+            unsignedStringBuilder.Append("Content-Transfer-Encoding: ");
+            unsignedStringBuilder.Append(TransferEncoder.GetTransferEncodingName(unsignedContent.TransferEncoding));
+            unsignedStringBuilder.Append("\r\n\r\n");
+            unsignedStringBuilder.Append(Encoding.ASCII.GetString(unsignedContent.Body));
 
-            string fullUnsignedMessage = fullUnsignedMessageBuilder.ToString();
+            string fullUnsignedMessage = unsignedStringBuilder.ToString();
 
             byte[] signature = Helpers.Sign(fullUnsignedMessage, From.SigningCertificate, From.EncryptionCertificate);
 
-            StringBuilder signedMessageBuilder = new StringBuilder();
+            var signedStringBuilder = new StringBuilder();
 
-            signedMessageBuilder.Append("--");
-            signedMessageBuilder.Append(signedContentType.Boundary);
-            signedMessageBuilder.Append("\r\n");
-            signedMessageBuilder.Append(fullUnsignedMessage);
-            signedMessageBuilder.Append("\r\n");
-            signedMessageBuilder.Append("--");
-            signedMessageBuilder.Append(signedContentType.Boundary);
-            signedMessageBuilder.Append("\r\n");
-            signedMessageBuilder.Append("Content-Type: application/x-pkcs7-signature; name=\"smime.p7s\"\r\n");
-            signedMessageBuilder.Append("Content-Transfer-Encoding: base64\r\n");
-            signedMessageBuilder.Append("Content-Disposition: attachment; filename=\"smime.p7s\"\r\n\r\n");
-            signedMessageBuilder.Append(TransferEncoder.ToBase64(signature));
-            signedMessageBuilder.Append("\r\n\r\n");
-            signedMessageBuilder.Append("--");
-            signedMessageBuilder.Append(signedContentType.Boundary);
-            signedMessageBuilder.Append("--\r\n");
+            signedStringBuilder.Append("--");
+            signedStringBuilder.Append(signedContentType.Boundary);
+            signedStringBuilder.Append("\r\n");
+            signedStringBuilder.Append(fullUnsignedMessage);
+            signedStringBuilder.Append("\r\n");
+            signedStringBuilder.Append("--");
+            signedStringBuilder.Append(signedContentType.Boundary);
+            signedStringBuilder.Append("\r\n");
+            signedStringBuilder.Append("Content-Type: application/x-pkcs7-signature; name=\"smime.p7s\"\r\n");
+            signedStringBuilder.Append("Content-Transfer-Encoding: base64\r\n");
+            signedStringBuilder.Append("Content-Disposition: attachment; filename=\"smime.p7s\"\r\n\r\n");
+            signedStringBuilder.Append(TransferEncoder.ToBase64(signature));
+            signedStringBuilder.Append("\r\n\r\n");
+            signedStringBuilder.Append("--");
+            signedStringBuilder.Append(signedContentType.Boundary);
+            signedStringBuilder.Append("--\r\n");
 
             return new SmimeMessageContent(Encoding.ASCII.GetBytes(
-                signedMessageBuilder.ToString()),
+                signedStringBuilder.ToString()),
                 signedContentType,
                 TransferEncoding.SevenBit,
                 false);
@@ -440,18 +274,14 @@ namespace AegisImplicitMail
 
         private SmimeMessageContent EncryptContent(SmimeMessageContent unencryptedContent)
         {
-            X509Certificate2Collection encryptionCertificates = new X509Certificate2Collection();
+            var encryptionCertificates = new X509Certificate2Collection();
 
-            # region Gather All Encryption Certificates
 
             if (From.EncryptionCertificate == null)
             {
                 throw new InvalidOperationException("To send an encrypted message, the sender must have an encryption certificate specified.");
             }
-            else
-            {
-                encryptionCertificates.Add(From.EncryptionCertificate);
-            }
+            encryptionCertificates.Add(From.EncryptionCertificate);
 
             foreach (IEnumerable<SmimeMailAddress> addressList in new IEnumerable<SmimeMailAddress>[] { To, CC, Bcc })
             {
@@ -461,18 +291,14 @@ namespace AegisImplicitMail
                     {
                         throw new InvalidOperationException("To send an encrypted message, all receivers (To, CC, and Bcc) must have an encryption certificate specified.");
                     }
-                    else
-                    {
                         encryptionCertificates.Add(address.EncryptionCertificate);
-                    }
                 }
             }
 
-            # endregion
 
-            ContentType encryptedContentType = new ContentType("application/x-pkcs7-mime; smime-type=enveloped-data; name=\"smime.p7m\"");
+            var encryptedContentType = new ContentType("application/x-pkcs7-mime; smime-type=enveloped-data; name=\"smime.p7m\"");
 
-            StringBuilder fullUnencryptedMessageBuilder = new StringBuilder();
+            var fullUnencryptedMessageBuilder = new StringBuilder();
             fullUnencryptedMessageBuilder.Append("Content-Type: ");
             fullUnencryptedMessageBuilder.Append(unencryptedContent.ContentType.ToString());
             fullUnencryptedMessageBuilder.Append("\r\n");
@@ -510,60 +336,60 @@ namespace AegisImplicitMail
         }
 
         /// <summary>
-        /// Converts the message to a System.Net.Mail.MailMessage instance.
+        /// You can use this function to send explicit and normal S/Mime Messages. It Converts the message to a System.Net.Mail.MailMessage instance.
         /// </summary>
         /// <returns>A System.Net.Mail.MailMessage instance.</returns>
-        public System.Net.Mail.MailMessage ToMailMessage()
+        public MailMessage ToMailMessage()
         {
-            System.Net.Mail.MailMessage returnValue = new System.Net.Mail.MailMessage();
-
+            var result = new MailMessage();
+            #region Set Addressed
             if (From != null)
             {
-                returnValue.From = From;
+                result.From = From;
             }
-
             if (Sender != null)
             {
-                returnValue.Sender = Sender;
+                result.Sender = Sender;
             }
-
+            //Depricated Property
             if (ReplyTo != null)
             {
-                returnValue.ReplyTo = ReplyTo;
+                result.ReplyTo = ReplyTo;
             }
-
 
             foreach (SmimeMailAddress toAddress in To)
             {
-                returnValue.To.Add(toAddress);
+                result.To.Add(toAddress);
             }
 
             foreach (SmimeMailAddress ccAddress in CC)
             {
-                returnValue.CC.Add(ccAddress);
+                result.CC.Add(ccAddress);
             }
 
             foreach (SmimeMailAddress bccAddress in Bcc)
             {
-                returnValue.Bcc.Add(bccAddress);
+                result.Bcc.Add(bccAddress);
             }
+            #endregion
 
-            returnValue.DeliveryNotificationOptions = InternalMailMessage.DeliveryNotificationOptions;
+            result.DeliveryNotificationOptions = DeliveryNotificationOptions;
 
-            foreach (string header in InternalMailMessage.Headers)
+            foreach (string header in Headers)
             {
-                returnValue.Headers.Add(header, InternalMailMessage.Headers[header]);
+                result.Headers.Add(header, Headers[header]);
             }
 
-            returnValue.Priority = InternalMailMessage.Priority;
-            returnValue.Subject = InternalMailMessage.Subject;
-            returnValue.SubjectEncoding = InternalMailMessage.SubjectEncoding;
+            result.Priority = Priority;
+            result.Subject = Subject;
+            result.SubjectEncoding = SubjectEncoding;
 
-            SmimeMessageContent content = GetCompleteContent();
+            //Generate Signe/Encrypted content
+            SmimeMessageContent smimeContent = GetCompleteContent();
 
-            MemoryStream contentStream = new MemoryStream();
+            var contentStream = new MemoryStream();
 
-            if (this.IsMultipart)
+            if (IsMultipart)
             {
                 byte[] mimeMessage = Encoding.ASCII.GetBytes("This is a multi-part message in MIME format.\r\n\r\n");
 
@@ -572,13 +398,14 @@ namespace AegisImplicitMail
 
             byte[] encodedBody;
 
-            switch (content.TransferEncoding)
+            //Generate body of message and return
+            switch (smimeContent.TransferEncoding)
             {
                 case TransferEncoding.SevenBit:
-                    encodedBody = Encoding.ASCII.GetBytes(Regex.Replace(Encoding.ASCII.GetString(content.Body), "^\\.", "..", RegexOptions.Multiline));
+                    encodedBody = Encoding.ASCII.GetBytes(Regex.Replace(Encoding.ASCII.GetString(smimeContent.Body), "^\\.", "..", RegexOptions.Multiline));
                     break;
                 default:
-                    encodedBody = content.Body;
+                    encodedBody = smimeContent.Body;
                     break;
             }
 
@@ -586,14 +413,21 @@ namespace AegisImplicitMail
 
             contentStream.Position = 0;
 
-            System.Net.Mail.AlternateView contentView = new System.Net.Mail.AlternateView(contentStream, content.ContentType);
-            contentView.TransferEncoding = TransferEncoder.ConvertTransferEncoding(content.TransferEncoding);
+            var contentView = new AlternateView(contentStream, smimeContent.ContentType)
+            {
+                TransferEncoding = TransferEncoder.ConvertTransferEncoding(smimeContent.TransferEncoding)
+            };
 
-            returnValue.AlternateViews.Add(contentView);
+            result.AlternateViews.Add(contentView);
 
-            return returnValue;
+            return result;
         }
 
+
+
+        # endregion
+
+        # region Convertor Operators
 
         /// <summary>
         /// Converts the message to a System.Net.Mail.MailMessage instance.
@@ -601,9 +435,10 @@ namespace AegisImplicitMail
         /// <returns>A System.Net.Mail.MailMessage instance.</returns>
         public MimeMailMessage ToSmtpMailMessage()
         {
-            MimeMailMessage returnValue = new MimeMailMessage();
-            foreach (MimeAttachment attachment in Attachments)
+            var returnValue = new MimeMailMessage();
+            foreach (var attachment1 in Attachments)
             {
+                var attachment = (MimeAttachment) attachment1;
                 returnValue.Attachments.Add(attachment);
             }
             if (From != null)
@@ -637,25 +472,24 @@ namespace AegisImplicitMail
                 returnValue.Bcc.Add(bccAddress);
             }
 
-            returnValue.DeliveryNotificationOptions = InternalMailMessage.DeliveryNotificationOptions;
+            returnValue.DeliveryNotificationOptions = DeliveryNotificationOptions;
 
-            foreach (string header in InternalMailMessage.Headers)
+            foreach (string header in Headers)
             {
-                returnValue.Headers.Add(header, InternalMailMessage.Headers[header]);
+                returnValue.Headers.Add(header, Headers[header]);
             }
 
-            returnValue.Priority = InternalMailMessage.Priority;
-            returnValue.Subject = InternalMailMessage.Subject;
-            returnValue.SubjectEncoding = InternalMailMessage.SubjectEncoding;
+            returnValue.Priority = Priority;
+            returnValue.Subject = Subject;
+            returnValue.SubjectEncoding = SubjectEncoding;
 
             SmimeMessageContent content = GetCompleteContent();
 
-            MemoryStream contentStream = new MemoryStream();
+            var contentStream = new MemoryStream();
 
-            if (this.IsMultipart)
+            if (IsMultipart)
             {
                 byte[] mimeMessage = Encoding.ASCII.GetBytes("This is a multi-part message in MIME format.\r\n\r\n");
-
                 contentStream.Write(mimeMessage, 0, mimeMessage.Length);
             }
 
@@ -675,8 +509,10 @@ namespace AegisImplicitMail
 
             contentStream.Position = 0;
 
-            System.Net.Mail.AlternateView contentView = new System.Net.Mail.AlternateView(contentStream, content.ContentType);
-            contentView.TransferEncoding = TransferEncoder.ConvertTransferEncoding(content.TransferEncoding);
+            var contentView = new AlternateView(contentStream, content.ContentType)
+            {
+                TransferEncoding = TransferEncoder.ConvertTransferEncoding(content.TransferEncoding)
+            };
 
             returnValue.AlternateViews.Add(contentView);
 
@@ -684,35 +520,26 @@ namespace AegisImplicitMail
         }
 
 
-        # endregion
-
-        # region Overloaded Operators
-
-
+        /// <summary>
+        /// To cast To normal Mail Message
+        /// </summary>
+        /// <param name="message">A Smime mail message</param>
+        /// <returns>SmtpMailMessage equalance of the SmimeMessage</returns>
         public static implicit operator MimeMailMessage(SmimeMailMessage message)
         {
             if (message == null)
             {
                 return null;
             }
-            else
-            {
-                return message.ToSmtpMailMessage();
-            }
+            return message.ToSmtpMailMessage();
         }
 
         # endregion
 
         #region IDisposable Members
 
-        /// <summary>
-        /// Disposes the object, freeing all resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-        }
 
+        /*
         /// <summary>
         /// Disposes the object, freeing all resources.
         /// </summary>
@@ -722,11 +549,11 @@ namespace AegisImplicitMail
             {
                 if (InternalMailMessage != null)
                 {
-                    InternalMailMessage.Dispose();
+                    Dispose();
                 }
             }
         }
-
+        */
         #endregion
     }
 }

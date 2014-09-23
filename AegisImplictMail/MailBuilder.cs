@@ -18,8 +18,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net.Mail;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AegisImplicitMail
 {
@@ -29,8 +27,9 @@ namespace AegisImplicitMail
     class MailBuilder
     {
         private readonly MailPriority _messagePriority;
+        private readonly AuthenticationType _authenticationType;
 
-        public MailBuilder(string host, int port, string userName, string passWord, string senderEmailAddresss, string senderDisplayName, bool isSsl = false, bool useHtml = true, bool implictSsl = false, bool smime = false, MailPriority messagePriority = MailPriority.Normal, SendCompletedEventHandler onSendCallBack = null, bool encrypt =false, bool sign = false)
+        public MailBuilder(string host, int port, string userName, string passWord, string senderEmailAddresss, string senderDisplayName, bool isSsl = false, bool useHtml = true, bool implictSsl = false, bool smime = false, MailPriority messagePriority = MailPriority.Normal, SendCompletedEventHandler onSendCallBack = null, bool encrypt =false, bool sign = false , AuthenticationType authenticationType  = AuthenticationType.PlainText)
         {
             _passWord = passWord;
             _isSsl = isSsl;
@@ -43,9 +42,10 @@ namespace AegisImplicitMail
             _implictSsl = implictSsl;
             _smime = smime;
             _onSendCallBack = onSendCallBack;
-            this._encrypt = encrypt;
-            this._sign = sign;
-            this._messagePriority = messagePriority;
+            _encrypt = encrypt;
+            _sign = sign;
+            _messagePriority = messagePriority;
+            _authenticationType = authenticationType;
         }
 
         public void SendMail()
@@ -102,30 +102,6 @@ namespace AegisImplicitMail
 
         private readonly bool _useHtml;
 
-        private void SmtpSendMessage(AbstractMailMessage msg, SendCompletedEventHandler OnMailSent)
-        {
-
-
-            // Connecting to the server and configuring it
-            using (var client = new SmtpSocketClient())
-            {
-                client.Host = _host;
-                client.Port = _port;
-                client.EnableSsl = _isSsl;
-                if (String.IsNullOrEmpty(_userName))
-                    client.AuthenticationMode = AuthenticationType.UseDefualtCridentials;
-                else
-                {
-                    client.AuthenticationMode = _base64Authentication ? AuthenticationType.Base64 : AuthenticationType.PlainText;
-                    client.Password = _passWord;
-                    client.User = _userName;
-                }
-
-                client.OnMailSent += new SendCompletedEventHandler(_onSendCallBack);
-                client.SendMessageAsync(msg);
-            }
-        }
-
         public void SendImplicitMail(List<MailAddress> recieverMailAddresses, MailPriority messagePriority, string messageSubject, string messageBody, List<string> attachmentAddress = null, List<MailAddress> ccMailAddresses = null, List<MailAddress> bccMailAddresses = null)
         {
             var msg = new MimeMailMessage();
@@ -140,7 +116,10 @@ namespace AegisImplicitMail
             if (attachmentAddress != null)
                 attachmentAddress.ForEach(a=> msg.Attachments.Add(new MimeAttachment(a)));
     
-            SmtpSendMessage(msg,null);
+            var mm = new MimeMailer(_host,_port,_userName,_passWord,_isSsl,_senderDisplayName,_senderEmailAddresss,_useHtml,true,_messagePriority,_authenticationType);
+        mm.Send(msg,_onSendCallBack);
+
+   
         }
 
         public void SendMail(List<MailAddress> recieverMailAddresses, MailPriority messagePriority, string messageSubject, string messageBody, List<string> attachmentAddress = null, SendCompletedEventHandler onSendCallBack = null, List<MailAddress> ccMailAddresses = null, List<MailAddress> bccMailAddresses = null)

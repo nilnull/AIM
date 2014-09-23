@@ -23,5 +23,24 @@ namespace AegisImplicitMail
     /// </summary>
     public abstract class AbstractMailMessage : MailMessage
     {
+        protected AbstractMailMessage(string from, string to, string subject, string body)
+            : base(from, to, subject, body)
+        {
+        }
+
+        protected AbstractMailMessage(string from, string to)
+            : base(from, to)
+        {
+        }
+
+        protected AbstractMailMessage()
+            : base()
+        {
+        }
+
+
+ 
     }
+
+
 }

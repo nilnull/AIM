@@ -13,6 +13,7 @@
 using System;
 using System.ComponentModel;
 using System.Net.Mail;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.IO;
 using System.Security.Cryptography;
@@ -21,14 +22,17 @@ using System.Threading;
 namespace AegisImplicitMail
 {
 
-    public class SmtpSocketClient : IDisposable
+    /// <summary>
+    /// Send Implicit Ssl and none Ssl Messages
+    /// </summary>
+    internal class SmtpSocketClient : IDisposable
     {
-        const string authExtension = "AUTH";
-        const string authLogin = "LOGIN";
-        const string authPlian = "PLAIN";
-        private const string gap = " ";
-        const string authGssapi = "gssapi";
-        const string authWDigest = "wdigest";
+        const string AuthExtension = "AUTH";
+        const string AuthLogin = "LOGIN";
+        const string AuthPlian = "PLAIN";
+        private const string Gap = " ";
+        const string AuthGssapi = "gssapi";
+        const string AuthWDigest = "wdigest";
 
         #region variables
 		/// <summary>
@@ -39,15 +43,15 @@ namespace AegisImplicitMail
 		/// <summary>
 		/// The delegate function which is called after mail has been sent.
 		/// </summary>
-		public event SendCompletedEventHandler OnMailSent;
+		public event SendCompletedEventHandler SendCompleted;
         private SmtpSocketConnection _con;
         private int _port;
-        private bool _sendAsHtml;
+        private readonly bool _sendAsHtml;
         private AuthenticationType _authMode = AuthenticationType.UseDefualtCridentials;
         private string _user;
         private string _password;
         private MimeMailMessage _mailMessage;
-
+        private X509CertificateCollection ClientCertificates { get; set; }
 
         private string _host;
         /// <summary>
@@ -135,7 +139,7 @@ namespace AegisImplicitMail
         /// <param name="onMailSend">This function will be called after mail is sent</param>
         /// <param name="enableSsl">Your connection is Ssl conection?</param>
         /// <exception cref="ArgumentNullException">If username and pass is needed and not provided</exception>
-        public SmtpSocketClient(string host, int port, string username =null, string password = null, AuthenticationType authenticationMode = AuthenticationType.Base64, bool useHtml =true, MimeMailMessage msg =null , SendCompletedEventHandler onMailSend =null, bool enableSsl = true ):this(msg)
+        public SmtpSocketClient(string host, int port =465, string username =null, string password = null, AuthenticationType authenticationMode = AuthenticationType.Base64, bool useHtml =true, MimeMailMessage msg =null , SendCompletedEventHandler onMailSend =null, bool enableSsl = true ):this(msg)
         {
             if ((AuthenticationMode != AuthenticationType.UseDefualtCridentials) &&
                 (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password)))
@@ -150,7 +154,7 @@ namespace AegisImplicitMail
             _authMode = authenticationMode;
             _mailMessage = msg;
             _sendAsHtml = useHtml;
-            OnMailSent = onMailSend;
+            SendCompleted = onMailSend;
             EnableSsl = enableSsl;
 
         }
@@ -171,7 +175,7 @@ namespace AegisImplicitMail
         /// <summary>
 		/// Send the message.
 		/// </summary>
-		public void SendMessage(AbstractMailMessage message)
+		public void SendMail(AbstractMailMessage message)
         {
             MailMessage = (MimeMailMessage) message;
 			lock(this)
@@ -191,6 +195,10 @@ namespace AegisImplicitMail
 				}
 				//set up initial connection
 				_con = new SmtpSocketConnection();
+			    if (ClientCertificates != null)
+			    {
+			        _con.clientcerts = ClientCertificates;
+			    }
 				if(_port <= 0) _port = 465;
 				_con.Open(_host, _port,EnableSsl);
 				var buf = new StringBuilder();
@@ -215,7 +223,7 @@ namespace AegisImplicitMail
           switch(_authMode)
           {
             case AuthenticationType.Base64:
-              _con.SendCommand(authExtension+gap + authLogin);
+              _con.SendCommand(AuthExtension+Gap + AuthLogin);
               _con.GetReply(out response, out code);              
               _con.SendCommand(Convert.ToBase64String(Encoding.ASCII.GetBytes(_user)));
               _con.GetReply(out response, out code);
@@ -224,7 +232,7 @@ namespace AegisImplicitMail
               break;
 
             case AuthenticationType.PlainText:
-              _con.SendCommand( authExtension+ gap+authLogin + gap+ authPlian);
+              _con.SendCommand( AuthExtension+ Gap+AuthLogin + Gap+ AuthPlian);
               _con.GetReply(out response, out code);          
               _con.SendCommand(_user);
               _con.GetReply(out response, out code);
@@ -347,7 +355,7 @@ namespace AegisImplicitMail
 					_con.SendCommand("--#SEPERATOR3#");
 					_con.SendCommand("Content-Type: text/html; charset=iso-8859-1");				
 					_con.SendCommand("Content-Transfer-Encoding: quoted-printable\r\n");		
-					_con.SendCommand(EncodeBodyAsQuotedPrintable());
+					_con.SendCommand(BodyToQuotedPrintable());
 					_con.SendCommand("--#SEPERATOR3#");
 					_con.SendCommand("Content-Type: text/plain; charset=iso-8859-1");									
 					_con.SendCommand("\r\nIf you can see this, then your email client does not support MHTML messages.");
@@ -367,7 +375,7 @@ namespace AegisImplicitMail
 						_con.SendCommand("Content-Type: text/plain; charset=iso-8859-1");				
 						_con.SendCommand("Content-Transfer-Encoding: quoted-printable\r\n");		
 					}
-					_con.SendCommand(EncodeBodyAsQuotedPrintable());
+					_con.SendCommand(BodyToQuotedPrintable());
 				}
 				if(_sendAsHtml)
 				{
@@ -393,9 +401,9 @@ namespace AegisImplicitMail
 				_con.Close();
 				_con = null;
                 
-				if(OnMailSent != null)
+				if(SendCompleted != null)
 				{
-					OnMailSent(this, new AsyncCompletedEventArgs(null,false,response));
+					SendCompleted(this, new AsyncCompletedEventArgs(null,false,response));
 				}
 			}
 		}
@@ -403,11 +411,11 @@ namespace AegisImplicitMail
 		/// <summary>
 		/// Send the message on a seperate thread.
 		/// </summary>
-		public void SendMessageAsync(AbstractMailMessage message = null)
+		public void SendMailAsync(AbstractMailMessage message = null)
 		{
 		    if (message == null)
 		        message = this.MailMessage;
-			new Thread(()=> SendMessage(message)).Start();
+			new Thread(()=> SendMail(message)).Start();
 		}
 
 		/// <summary>
@@ -466,7 +474,7 @@ namespace AegisImplicitMail
 		/// For more information see RFC 2045.
 		/// </summary>
 		/// <returns>The encoded body.</returns>
-		private string EncodeBodyAsQuotedPrintable()
+		private string BodyToQuotedPrintable()
 		{
 			var stringBuilder = new StringBuilder();
 			sbyte currentByte;

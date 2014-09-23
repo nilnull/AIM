@@ -14,6 +14,7 @@ using System;
 using System.IO;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
@@ -28,7 +29,8 @@ namespace AegisImplicitMail
         /// Get the client side certificate for ssl validation
         /// </summary>
 	    public X509Certificate2 ClientCertificate2 { get; set; }
-		//variables
+        public X509CertificateCollection clientcerts { get; set; }
+        //variables
 		private TcpClient _socket;
 		private StreamReader _reader;
 		private StreamWriter _writer;
@@ -67,7 +69,13 @@ namespace AegisImplicitMail
         }
 
         EncryptionPolicy encryptionPolicy = EncryptionPolicy.AllowNoEncryption;
+	    private SslProtocols _sslProtocol = SslProtocols.Default;
 
+	    public SslProtocols SslProtocol
+	    {
+            get { return _sslProtocol; }
+            set { _sslProtocol = value; }
+	    }
 
 	    /// <summary>
 	    /// Open connection to host on port.
@@ -78,24 +86,35 @@ namespace AegisImplicitMail
 	    /// <exception cref="ArgumentException"></exception>
 	    internal void Open(string host, int port = 465, bool isSsl = true)
 		{
-            if (host == null || host.Trim().Length == 0 || port <= 0)
+            if (string.IsNullOrWhiteSpace(host) || port <= 0)
             {
                 throw new ArgumentException("Invalid Argument found.");
             }
             _socket.Connect(host, port);
 
-            if (isSsl)
-            {
-                
-               var sslStream = new SslStream(_socket.GetStream(),
-                    true, _validationCallback, ClientCertificateSelectionCallback, encryptionPolicy);
-                sslStream.AuthenticateAsClient("*.scan-associates.net");
-                Console.Out.WriteLine("is authe?" +sslStream.IsAuthenticated);
-                _writer = new StreamWriter(sslStream, Encoding.ASCII);
-                _reader = new StreamReader(sslStream,Encoding.ASCII);
+	        if (isSsl)
+	        {
+
+	            if (clientcerts == null)
+	            {
+
+	                var sslStream = new SslStream(_socket.GetStream(),
+	                    true, _validationCallback, ClientCertificateSelectionCallback, encryptionPolicy);
+	                sslStream.AuthenticateAsClient(host);
+	                _writer = new StreamWriter(sslStream, Encoding.ASCII);
+	                _reader = new StreamReader(sslStream, Encoding.ASCII);
+	            }
+	            else
+	            {
+                    var sslStream = new SslStream(_socket.GetStream(),
+                   true, _validationCallback, ClientCertificateSelectionCallback, encryptionPolicy);
+                    sslStream.AuthenticateAsClient(host,clientcerts,_sslProtocol, CheckRevokation);
+                    _writer = new StreamWriter(sslStream, Encoding.ASCII);
+                    _reader = new StreamReader(sslStream, Encoding.ASCII);
+	            }
 
 
-            }
+	        }
             else
             {
                 _reader = new StreamReader(_socket.GetStream(), Encoding.ASCII);
@@ -105,8 +124,10 @@ namespace AegisImplicitMail
             }
                     
 		}
-		
-		/// <summary>
+
+	    public bool CheckRevokation { get; set; }
+
+	    /// <summary>
 		/// Close connection.
 		/// </summary>
 		internal void Close()
@@ -167,7 +188,6 @@ namespace AegisImplicitMail
 	    {
             _socket.Close();
             _socket = null;
-	        throw new NotImplementedException();
 	    }
 	}
 }

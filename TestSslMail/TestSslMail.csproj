@@ -34,26 +34,46 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AttachType.cs">
+    <Compile Include="Dialogs\AttachType.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.cs">
+    <Compile Include="Dialogs\GetUser.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="Dialogs\GetUser.Designer.cs">
+      <DependentUpon>GetUser.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\GetUserWithCert.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\GetUserWithCert.Designer.cs">
+      <DependentUpon>GetUserWithCert.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MimeMessage.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MimeMessage.Designer.cs">
+      <DependentUpon>MimeMessage.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="AttachType.resx">
+    <EmbeddedResource Include="Dialogs\AttachType.resx">
       <DependentUpon>AttachType.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <EmbeddedResource Include="Dialogs\GetUser.resx">
+      <DependentUpon>GetUser.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\GetUserWithCert.resx">
+      <DependentUpon>GetUserWithCert.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MimeMessage.resx">
+      <DependentUpon>MimeMessage.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
