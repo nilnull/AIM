@@ -25,7 +25,7 @@ namespace AegisImplicitMail
     /// <summary>
     /// Send Implicit Ssl and none Ssl Messages
     /// </summary>
-    internal class SmtpSocketClient : IDisposable
+    public class SmtpSocketClient : IDisposable
     {
         const string AuthExtension = "AUTH";
         const string AuthLogin = "LOGIN";

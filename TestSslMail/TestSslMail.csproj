@@ -55,6 +55,12 @@
     <Compile Include="Dialogs\GetUserWithCert.Designer.cs">
       <DependentUpon>GetUserWithCert.cs</DependentUpon>
     </Compile>
+    <Compile Include="MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="MimeMessage.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -63,6 +69,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SmimeMessage.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SmimeMessage.Designer.cs">
+      <DependentUpon>SmimeMessage.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="Dialogs\AttachType.resx">
       <DependentUpon>AttachType.cs</DependentUpon>
     </EmbeddedResource>
@@ -71,6 +83,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\GetUserWithCert.resx">
       <DependentUpon>GetUserWithCert.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MimeMessage.resx">
       <DependentUpon>MimeMessage.cs</DependentUpon>
@@ -84,6 +99,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="SmimeMessage.resx">
+      <DependentUpon>SmimeMessage.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

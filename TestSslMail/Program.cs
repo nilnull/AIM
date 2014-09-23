@@ -15,7 +15,7 @@ namespace TestSslMail
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MimeMessage());
+            Application.Run(new MainForm());
         }
     }
 }

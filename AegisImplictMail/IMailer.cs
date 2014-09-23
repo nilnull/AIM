@@ -33,7 +33,7 @@ namespace AegisImplicitMail
         /// <param name="subject">Message's subject</param>
         /// <param name="body">Body of message</param>
         /// <returns>Generatedc mail message</returns>
-        AbstractMailMessage GenerateMail(IMailAddress Sender, List<IMailAddress> toAddresses, List<IMailAddress> ccAddresses, List<IMailAddress> bccAddresses, List<string> attachmentsList, string subject, string body);
+        AbstractMailMessage GenerateMail(IMailAddress sender, List<IMailAddress> toAddresses, List<IMailAddress> ccAddresses, List<IMailAddress> bccAddresses, List<string> attachmentsList, string subject, string body);
         /// <summary>
         /// Send an email
         /// </summary>

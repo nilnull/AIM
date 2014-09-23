@@ -74,6 +74,16 @@ namespace AegisImplicitMail
             SigningCertificate = signingCert;
         }
 
+        public SmimeMailAddress(string address, X509Certificate2 encryptionCert, X509Certificate2 signingCert)
+            : this(address, null, encryptionCert,signingCert)
+        {
+            if (signingCert != null && !signingCert.HasPrivateKey)
+            {
+                throw new CryptographicException("The specified signing certificate doesn't contain a private key.");
+            }
+
+            SigningCertificate = signingCert;
+        }
         # endregion
 
         # region Properties

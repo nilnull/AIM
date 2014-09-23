@@ -55,9 +55,10 @@ namespace TestSslMail.Dialogs
             return false;
         }
 
-        public GetUserWithCert()
+        public GetUserWithCert(string title = "Please choos a user")
         {
             InitializeComponent();
+            groupBox1.Text = title;
         }
 
         private void okBtn_Click(object sender, EventArgs e)

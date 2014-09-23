@@ -7,12 +7,9 @@
  * See the GNU General Public License for more details.
  * You should have received a copy of the GNU General Public License along with this program.  
  * If not, see <http://www.gnu.org/licenses/>.
- *
  * If you need any more details please contact <a.farhang.d@gmail.com>
- * 
  * Aegis Implicit Mail is an implict ssl package to use mine/smime messages on implict ssl servers
  */
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -25,16 +22,8 @@ using TestSslMail.Dialogs;
 
 namespace TestSslMail
 {
-    public partial class MimeMessage : Form
+    public partial class SmimeMessage : Form
     {
-
-
-        public MimeMessage()
-        {
-            InitializeComponent();
-           ResetAll();
-            
-        }
 
         private void ResetAll()
         {
@@ -53,7 +42,7 @@ namespace TestSslMail
         private void button1_Click(object sender, EventArgs e)
         {
             var txt = "";
-            var userGetter = new GetUser("Please choose Reciever");
+            var userGetter = new GetUserWithCert();
             if (userGetter.ShowDialog() == DialogResult.OK)
             {
                 if (!String.IsNullOrWhiteSpace(userGetter.DisplayName) &&
@@ -61,13 +50,13 @@ namespace TestSslMail
                 {
                     txt = userGetter.DisplayName + " " + "<" + userGetter.MailAddress + "> ;";
 
-                    ToList.Add(new MimeMailAddress(userGetter.MailAddress, userGetter.DisplayName));
+                    ToList.Add(new SmimeMailAddress(userGetter.MailAddress, userGetter.DisplayName,userGetter.PublicKey,userGetter.PrivateKey));
                 }
                 else if (!String.IsNullOrWhiteSpace(userGetter.MailAddress))
                 {
                     txt = "<" + userGetter.MailAddress + "> ;";
 
-                    ToList.Add( new MimeMailAddress(userGetter.MailAddress));
+                    ToList.Add(new SmimeMailAddress(userGetter.MailAddress,userGetter.PublicKey,userGetter.PrivateKey));
                 }
                 to.Text += txt;
             }
@@ -79,7 +68,7 @@ namespace TestSslMail
         private List<IMailAddress> CcList { get; set; }
         private List<IMailAddress> BccList { get; set; }
         private List<Attachment> AttachList { get; set; }
-        private MimeMailAddress _senderMail;
+        private SmimeMailAddress _senderMail;
         private void button2_Click(object sender, EventArgs e)
         {
             SendMail();
@@ -93,34 +82,34 @@ namespace TestSslMail
             var subjectText = subject.Text;
             var bodyText = body.Text;
             var sendAsHtml = checkHTML.Checked;
-            
-            var mailMessage = new MimeMailMessage();
+
+            var mailMessage = new SmimeMailMessage();
             mailMessage.Subject = subjectText;
             mailMessage.Body = bodyText;
             mailMessage.Sender = _senderMail;
             mailMessage.IsBodyHtml = sendAsHtml;
             mailMessage.From = _senderMail;
-            var emailer = new MimeMailer(hostAddress,portNo);
-            emailer.Host = hostAddress;
-            emailer.Port = portNo;
-            emailer.MailMessage = mailMessage;
-            emailer.EnableSsl = true;
+            var emailer = new SmimeMailer(hostAddress, portNo)
+            {
+                MailMessage = mailMessage,
+                EnableSsl = true
+            };
 
             for (int x = 0; x < ToList.Count; ++x)
             {
-                emailer.MailMessage.To.Add((MimeMailAddress) ToList[x]);
+                emailer.MailMessage.To.Add((SmimeMailAddress)ToList[x]);
             }
             for (int x = 0; x < CcList.Count; ++x)
             {
-                emailer.MailMessage.CC.Add((MimeMailAddress) CcList[x]);
+                emailer.MailMessage.CC.Add((SmimeMailAddress)CcList[x]);
             }
             for (int x = 0; x < BccList.Count; ++x)
             {
-                emailer.MailMessage.Bcc.Add((MimeMailAddress) BccList[x]);
+                emailer.MailMessage.Bcc.Add((SmimeMailAddress)BccList[x]);
             }
             for (int x = 0; x < AttachList.Count; ++x)
             {
-                emailer.MailMessage.Attachments.Add((MimeAttachment) AttachList[x]);
+                emailer.MailMessage.Attachments.Add((MimeAttachment)AttachList[x]);
             }
             if (!loginNone.Checked)
             {
@@ -157,7 +146,7 @@ namespace TestSslMail
                 at.ShowDialog(this);
                 if (at.DialogResult == DialogResult.OK)
                 {
-                    a.ContentType =  new ContentType(at.contentType.Text);
+                    a.ContentType = new ContentType(at.contentType.Text);
                     a.Location = at.attachAttachment.Checked ? AttachmentLocation.Attachmed : AttachmentLocation.Inline;
                     AttachList.Add(a);
                 }
@@ -169,7 +158,7 @@ namespace TestSslMail
             userName.Enabled = password.Enabled = true;
         }
 
-        private void loginPlain_CheckedChanged(object sender,EventArgs e)
+        private void loginPlain_CheckedChanged(object sender, EventArgs e)
         {
             userName.Enabled = password.Enabled = true;
         }
@@ -180,11 +169,11 @@ namespace TestSslMail
             userName.Enabled = false;
         }
 
-        private void button4_Click(object sender, EventArgs e)
+        private void cc_Click(object sender, EventArgs e)
         {
-          
+
             var txt = "";
-            var userGetter = new GetUser("Please choose CC");
+            var userGetter = new GetUserWithCert("Please choose CC");
             if (userGetter.ShowDialog() == DialogResult.OK)
             {
 
@@ -193,23 +182,23 @@ namespace TestSslMail
                 {
                     txt = userGetter.DisplayName + " " + "<" + userGetter.MailAddress + "> ;";
 
-                    CcList.Add(new MimeMailAddress(userGetter.MailAddress, userGetter.DisplayName));
+                    CcList.Add(new SmimeMailAddress(userGetter.MailAddress, userGetter.DisplayName,userGetter.PublicKey,userGetter.PrivateKey));
                 }
                 else if (!String.IsNullOrWhiteSpace(userGetter.MailAddress))
                 {
                     txt = "<" + userGetter.MailAddress + "> ;";
 
-                    CcList.Add( new MimeMailAddress(userGetter.MailAddress));
+                    CcList.Add( new SmimeMailAddress(userGetter.MailAddress,userGetter.PublicKey,userGetter.PrivateKey));
                 }
                 cc.Text += txt;
             }
 
         }
 
-        private void button5_Click(object sender, EventArgs e)
+        private void bcc_Click(object sender, EventArgs e)
         {
             var txt = "";
-            var userGetter = new GetUser("Please choose BCC");
+            var userGetter = new GetUserWithCert("Please choose BCC");
             if (userGetter.ShowDialog() == DialogResult.OK)
             {
 
@@ -218,22 +207,22 @@ namespace TestSslMail
                 {
                     txt = userGetter.DisplayName + " " + "<" + userGetter.MailAddress + "> ;";
 
-                    BccList.Add(new MimeMailAddress(userGetter.MailAddress, userGetter.DisplayName));
+                    BccList.Add(new SmimeMailAddress(userGetter.MailAddress, userGetter.DisplayName,userGetter.PublicKey,userGetter.PrivateKey));
                 }
                 else if (!String.IsNullOrWhiteSpace(userGetter.MailAddress))
                 {
                     txt = "<" + userGetter.MailAddress + "> ;";
 
-                    BccList.Add( new MimeMailAddress(userGetter.MailAddress));
+                    BccList.Add(new SmimeMailAddress(userGetter.MailAddress,userGetter.PublicKey,userGetter.PrivateKey));
                 }
                 bcc.Text += txt;
             }
         }
 
-        private void button6_Click(object sender, EventArgs e)
+        private void from_Click(object sender, EventArgs e)
         {
             var txt = "";
-            var userGetter = new GetUser("Please choose sender");
+            var userGetter = new GetUserWithCert("Please choose sender");
             if (userGetter.ShowDialog() == DialogResult.OK)
             {
 
@@ -242,13 +231,13 @@ namespace TestSslMail
                 {
                     txt = userGetter.DisplayName + " " + "<" + userGetter.MailAddress + "> ;";
 
-                    _senderMail = new MimeMailAddress(userGetter.MailAddress, userGetter.DisplayName);
+                    _senderMail = new SmimeMailAddress(userGetter.MailAddress, userGetter.DisplayName,userGetter.PublicKey,userGetter.PrivateKey);
                 }
                 else if (!String.IsNullOrWhiteSpace(userGetter.MailAddress))
                 {
                     txt = "<" + userGetter.MailAddress + "> ;";
 
-                    _senderMail = new MimeMailAddress(userGetter.MailAddress);
+                    _senderMail =  new SmimeMailAddress(userGetter.MailAddress,userGetter.PublicKey,userGetter.PrivateKey);
                 }
                 senderText.Text = txt;
             }
@@ -269,8 +258,10 @@ namespace TestSslMail
 
         }
 
+        public SmimeMessage()
+        {
+            InitializeComponent();
+        }
+
     }
-
-
 }
-

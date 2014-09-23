@@ -23,7 +23,7 @@ namespace AegisImplicitMail
     /// <summary>
     /// SMIME Email sender 
     /// </summary>
-    internal class SmimeMailer : MimeMailer
+    public class SmimeMailer : MimeMailer
     {
         private readonly bool _encrypt;
         private readonly bool _sign;
@@ -74,6 +74,11 @@ namespace AegisImplicitMail
             
         }
 
+        public SmimeMailer(string host, int port):base(host,port) { }
+
+
+        public SmimeMailer(string host) : base(host) { }
+        public SmimeMailer() : base() { }
 
 
         public SmimeMailMessage GenerateMail(List<IMailAddress> toAddresses,
@@ -86,7 +91,7 @@ namespace AegisImplicitMail
             }
 
 
-            SmimeMailMessage message = new SmimeMailMessage();
+            var message = new SmimeMailMessage();
 
             to = toAddresses;
             cc = ccAddresses;

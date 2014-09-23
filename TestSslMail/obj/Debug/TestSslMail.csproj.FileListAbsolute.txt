@@ -38,3 +38,5 @@ D:\AEGIS\AegisImplicitMail\TestSslMail\bin\Debug\AegisImplictMail.pdb
 D:\AEGIS\AegisImplicitMail\TestSslMail\obj\Debug\TestSslMail.Dialogs.GetUser.resources
 D:\AEGIS\AegisImplicitMail\TestSslMail\obj\Debug\TestSslMail.Dialogs.GetUserWithCert.resources
 D:\AEGIS\AegisImplicitMail\TestSslMail\obj\Debug\TestSslMail.MimeMessage.resources
+D:\AEGIS\AegisImplicitMail\TestSslMail\obj\Debug\TestSslMail.MainForm.resources
+D:\AEGIS\AegisImplicitMail\TestSslMail\obj\Debug\TestSslMail.SmimeMessage.resources

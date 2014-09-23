@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Net;
 using System.Net.Mail;
 using System.Security.Cryptography.X509Certificates;
 
@@ -116,8 +117,8 @@ namespace AegisImplicitMail
             if (attachmentAddress != null)
                 attachmentAddress.ForEach(a=> msg.Attachments.Add(new MimeAttachment(a)));
     
-            var mm = new MimeMailer(_host,_port,_userName,_passWord,_isSsl,_senderDisplayName,_senderEmailAddresss,_useHtml,true,_messagePriority,_authenticationType);
-        mm.Send(msg,_onSendCallBack);
+            var mm = new MimeMailer(_host,_port,_userName,_passWord,_isSsl,true,_messagePriority,_authenticationType);
+             mm.Send(msg,_onSendCallBack);
 
    
         }
@@ -126,7 +127,7 @@ namespace AegisImplicitMail
         {
             // C# Code
             MailSent = false;
-            MailMessage msg = new MailMessage();
+            MimeMailMessage msg = new MimeMailMessage();
 
             // Your mail address and display name.
             // This what will appear on the From field.
@@ -134,7 +135,7 @@ namespace AegisImplicitMail
             // the SMTP server, the mail message would be
             // sent from the mail specified in the From
             // field on behalf of the real sender.
-            msg.From = new MailAddress(_senderEmailAddresss, _senderDisplayName);
+            msg.From = new MimeMailAddress(_senderEmailAddresss, _senderDisplayName);
 
             // To addresses
 
@@ -160,7 +161,7 @@ namespace AegisImplicitMail
             // Attaching some data
 
             if (attachmentAddress != null && attachmentAddress.Count > 0)
-                attachmentAddress.ForEach(a => msg.Attachments.Add(new Attachment(a)));
+                attachmentAddress.ForEach(a => msg.Attachments.Add(new MimeAttachment(a)));
 
 
             msg.SubjectEncoding = System.Text.Encoding.UTF8;
@@ -174,38 +175,36 @@ namespace AegisImplicitMail
 
         private readonly string _senderEmailAddresss;
 
-        private void SendMessage(MailMessage msg, SendCompletedEventHandler onSendCallBack)
+        private void SendMessage(AbstractMailMessage msg, SendCompletedEventHandler onSendCallBack)
         {
 
 
             // Connecting to the server and configuring it
-            using (var client = new SmtpClient())
+            using (var client = new MimeMailer())
             {
+                
                 client.Host = _host;
                 client.Port = _port;
                 client.EnableSsl = _isSsl;
                 if (String.IsNullOrEmpty(_userName))
-                    client.UseDefaultCredentials = true;
+                    client.AuthenticationMode = AuthenticationType.UseDefualtCridentials;
                 else
                 {
-                    client.UseDefaultCredentials = false;
-
-                    string pass = _passWord;
+           
+                    client.Password = _passWord;
                     // Provide your credentials
-                    client.Credentials = new System.Net.NetworkCredential(_userName,
-                        pass);
+                    client.User = _userName;
+                SmtpClient sc = new SmtpClient();
                 }
-                client.DeliveryMethod = SmtpDeliveryMethod.Network;
-
+            
                 // Use SendAsync to send the message asynchronously
                 //    client.Send(msg);
-                client.SendCompleted += new
-                    SendCompletedEventHandler(onSendCallBack);
+                client.SendCompleted += onSendCallBack;
                 // The userState can be any object that allows your callback  
                 // method to identify this send operation. 
                 // For this example, the userToken is a string constant. 
                 const string userState = "test message1";
-                client.Send(msg);
+                client.SendMailAsync(msg);
             }
         }
 
