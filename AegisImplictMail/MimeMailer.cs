@@ -40,6 +40,12 @@ namespace AegisImplicitMail
             }
         }
 
+        public bool EnableImplicitSsl
+        {
+            get { return _implictSsl; }
+            set { _implictSsl = value; }
+        }
+
         /// <summary>
         /// Indecate if we need to send mail as html or plain text
         /// </summary>
@@ -49,7 +55,7 @@ namespace AegisImplicitMail
         /// <summary>
         /// Indicate if ssl server is implicit server or explicit
         /// </summary>
-        private readonly bool _implictSsl;
+        private  bool _implictSsl;
 
         private readonly AuthenticationType _authenticationType;
 

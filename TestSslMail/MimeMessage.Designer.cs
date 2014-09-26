@@ -37,12 +37,14 @@
             this.label10 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.useSsl = new System.Windows.Forms.RadioButton();
             this.host = new System.Windows.Forms.TextBox();
-            this.userName = new System.Windows.Forms.TextBox();
             this.port = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.groupBoxlogin = new System.Windows.Forms.GroupBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.userName = new System.Windows.Forms.TextBox();
             this.checkHTML = new System.Windows.Forms.CheckBox();
             this.button3 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
@@ -59,13 +61,11 @@
             this.fromBtn = new System.Windows.Forms.Button();
             this.label7 = new System.Windows.Forms.Label();
             this.button11 = new System.Windows.Forms.Button();
-            this.useSsl = new System.Windows.Forms.RadioButton();
-            this.groupBoxlogin = new System.Windows.Forms.GroupBox();
             this.groupBox1.SuspendLayout();
+            this.groupBoxlogin.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
-            this.groupBoxlogin.SuspendLayout();
             this.SuspendLayout();
             // 
             // button5
@@ -158,6 +158,14 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Setup";
             // 
+            // useSsl
+            // 
+            this.useSsl.Location = new System.Drawing.Point(270, 15);
+            this.useSsl.Name = "useSsl";
+            this.useSsl.Size = new System.Drawing.Size(49, 24);
+            this.useSsl.TabIndex = 57;
+            this.useSsl.Text = "IsSsl";
+            // 
             // host
             // 
             this.host.Location = new System.Drawing.Point(63, 18);
@@ -165,19 +173,10 @@
             this.host.Size = new System.Drawing.Size(152, 20);
             this.host.TabIndex = 1;
             // 
-            // userName
-            // 
-            this.userName.Enabled = false;
-            this.userName.Location = new System.Drawing.Point(57, 19);
-            this.userName.Name = "userName";
-            this.userName.Size = new System.Drawing.Size(198, 20);
-            this.userName.TabIndex = 3;
-            // 
             // port
             // 
             this.port.Location = new System.Drawing.Point(233, 18);
             this.port.Name = "port";
-            this.port.PasswordChar = '*';
             this.port.Size = new System.Drawing.Size(28, 20);
             this.port.TabIndex = 2;
             this.port.Text = "465";
@@ -198,6 +197,20 @@
             this.label1.TabIndex = 31;
             this.label1.Text = "Host";
             // 
+            // groupBoxlogin
+            // 
+            this.groupBoxlogin.Controls.Add(this.groupBox4);
+            this.groupBoxlogin.Controls.Add(this.label10);
+            this.groupBoxlogin.Controls.Add(this.label9);
+            this.groupBoxlogin.Controls.Add(this.userName);
+            this.groupBoxlogin.Controls.Add(this.password);
+            this.groupBoxlogin.Location = new System.Drawing.Point(6, 40);
+            this.groupBoxlogin.Name = "groupBoxlogin";
+            this.groupBoxlogin.Size = new System.Drawing.Size(483, 100);
+            this.groupBoxlogin.TabIndex = 58;
+            this.groupBoxlogin.TabStop = false;
+            this.groupBoxlogin.Text = "Login";
+            // 
             // groupBox4
             // 
             this.groupBox4.Controls.Add(this.loginNone);
@@ -209,6 +222,14 @@
             this.groupBox4.TabIndex = 5;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Login Type";
+            // 
+            // userName
+            // 
+            this.userName.Enabled = false;
+            this.userName.Location = new System.Drawing.Point(57, 19);
+            this.userName.Name = "userName";
+            this.userName.Size = new System.Drawing.Size(198, 20);
+            this.userName.TabIndex = 3;
             // 
             // checkHTML
             // 
@@ -361,28 +382,6 @@
             this.button11.Text = "Reset";
             this.button11.Click += new System.EventHandler(this.button11_Click);
             // 
-            // useSsl
-            // 
-            this.useSsl.Location = new System.Drawing.Point(270, 15);
-            this.useSsl.Name = "useSsl";
-            this.useSsl.Size = new System.Drawing.Size(49, 24);
-            this.useSsl.TabIndex = 57;
-            this.useSsl.Text = "IsSsl";
-            // 
-            // groupBoxlogin
-            // 
-            this.groupBoxlogin.Controls.Add(this.groupBox4);
-            this.groupBoxlogin.Controls.Add(this.label10);
-            this.groupBoxlogin.Controls.Add(this.label9);
-            this.groupBoxlogin.Controls.Add(this.userName);
-            this.groupBoxlogin.Controls.Add(this.password);
-            this.groupBoxlogin.Location = new System.Drawing.Point(6, 40);
-            this.groupBoxlogin.Name = "groupBoxlogin";
-            this.groupBoxlogin.Size = new System.Drawing.Size(483, 100);
-            this.groupBoxlogin.TabIndex = 58;
-            this.groupBoxlogin.TabStop = false;
-            this.groupBoxlogin.Text = "Login";
-            // 
             // MimeMessage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -395,13 +394,13 @@
             this.Name = "MimeMessage";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.groupBoxlogin.ResumeLayout(false);
+            this.groupBoxlogin.PerformLayout();
             this.groupBox4.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
-            this.groupBoxlogin.ResumeLayout(false);
-            this.groupBoxlogin.PerformLayout();
             this.ResumeLayout(false);
 
         }

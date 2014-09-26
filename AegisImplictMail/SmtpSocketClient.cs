@@ -13,11 +13,13 @@
 using System;
 using System.ComponentModel;
 using System.Net.Mail;
+using System.Runtime.Remoting;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading;
+using AegisImplictMail;
 
 namespace AegisImplicitMail
 {
@@ -28,12 +30,18 @@ namespace AegisImplicitMail
     public class SmtpSocketClient : IDisposable
     {
         const string AuthExtension = "AUTH";
-        const string AuthLogin = "LOGIN";
-        const string AuthPlian = "PLAIN";
+        const string AuthNtlm = "NTLM";
+
         private const string Gap = " ";
         const string AuthGssapi = "gssapi";
         const string AuthWDigest = "wdigest";
 
+        /// <summary>
+        /// Sets the transaction time out by defualt it is 100,000  (100 secconds)
+        /// </summary>
+        public int Timeout {
+            get { return _timeout; }
+            set { _timeout = value; } }
         #region variables
 		/// <summary>
 		/// Delegate for mail sent notification.
@@ -46,6 +54,7 @@ namespace AegisImplicitMail
 		public event SendCompletedEventHandler SendCompleted;
         private SmtpSocketConnection _con;
         private int _port;
+        private int _timeout = 100000;
         private readonly bool _sendAsHtml;
         private AuthenticationType _authMode = AuthenticationType.UseDefualtCridentials;
         private string _user;
@@ -120,7 +129,14 @@ namespace AegisImplicitMail
             set { _mailMessage = value; }
         }
 
-        public bool EnableSsl { get; set; }
+        public bool EnableSsl {get; set; }
+
+        public bool DsnEnabled {get; private set; }
+
+        public bool ServerSupportsEai {get; private set; }
+
+        public bool SupportsTls {get; private set; }
+   
 
         #endregion
 
@@ -171,244 +187,483 @@ namespace AegisImplicitMail
 
 #endregion
 
+
+        public bool TestConnection()
+        {
+            lock (this)
+            {
+                if (string.IsNullOrWhiteSpace(_host))
+                {
+                    throw new ArgumentException("There wasn't any host address found for the mail.");
+                }
+                if (_authMode != AuthenticationType.UseDefualtCridentials)
+                {
+                    if (string.IsNullOrWhiteSpace(_user))
+                    {
+                        throw new ArgumentException(
+                            "You must specify user name when you are not using defualt credentials");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(_password))
+                    {
+                        throw new ArgumentException(
+                            "You must specify password when you are not using defualt credentials");
+                    }
+                }
+
+                if (InCall)
+                {
+                    throw new InvalidOperationException("Mime mailer is busy already, please try later");
+                }
+
+                InCall = true;
+                //set up initial connection
+                return EsablishSmtp();
+            }
+        }
+
+        private bool EsablishSmtp()
+        {
+            _con = new SmtpSocketConnection();
+            if (ClientCertificates != null)
+            {
+                _con.clientcerts = ClientCertificates;
+            }
+            if (_port <= 0) _port = 465;
+            try
+            {
+                _con.Open(_host, _port, EnableSsl,Timeout);
+            }
+            catch (Exception err)
+            {
+                if (SendCompleted != null)
+                {
+                    SendCompleted(this,
+                        new AsyncCompletedEventArgs(
+                            err, true, err.Message));
+                }
+                Dispose();
+                return false;
+            }
+            string response;
+            int code;
+            //read greeting
+            _con.GetReply(out response, out code);
+       
+            //Code 220 means that service is up and working
+
+            if (code != 220)
+            {
+                //There is something wrong
+                if (code == 421)
+                {
+                    if (SendCompleted != null)
+                    {
+                        SendCompleted(this,
+                            new AsyncCompletedEventArgs(
+                                new ServerException("Service not available, closing transmission channel"), true,
+                                response));
+                    }
+                }
+                else
+                {
+                    if (SendCompleted != null)
+                    {
+                        SendCompleted(this,
+                            new AsyncCompletedEventArgs(
+                                new ServerException("We couldn't connect to server, server is clossing"), true,
+                                response));
+                    }
+                }
+                QuiteConnection(out response, out code);
+                return false;
+            }
+            var buf = new StringBuilder();
+            if (_authMode == AuthenticationType.UseDefualtCridentials)
+            {
+                buf.Append(SmtpCommands.Hello);
+                buf.Append(_host);
+                _con.SendCommand(buf.ToString());
+                _con.GetReply(out response, out code);
+                //todo : Check authentication Errors
+            }
+            else
+            {
+                buf.Append(SmtpCommands.EHello);
+                buf.Append(_host);
+                _con.SendCommand(buf.ToString());
+                // Get available command in the EHello Answer
+                _con.GetReply(out response, out code);
+
+                string[] lines = response.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
+                ParseExtensions(lines);
+
+                Console.Out.WriteLine("Reply to EHLO: " + response + " Code :" + code);
+                switch (_authMode)
+                {
+                    case AuthenticationType.Base64:
+                   
+                        if (!AuthenticateAsBase64(out response, out code))
+                        {
+                            if (code == 501)
+                            {
+                                if (SendCompleted != null)
+                                {
+                                    SendCompleted(this,
+                                        new AsyncCompletedEventArgs(
+                                         new ServerException("Service Does not support Base64 Encoding. Please check authentification type"), true, response));
+                                }
+                            }
+                            if (code == 535)
+                            {
+                                if (SendCompleted != null)
+                                {
+                                    SendCompleted(this,
+                                        new AsyncCompletedEventArgs(
+                                            new ServerException("SMTP client authenticates but the username or password is incorrect"), true, response));
+                                }
+                            }
+                            else
+                            {
+                                if (SendCompleted != null)
+                                {
+                                    SendCompleted(this,
+                                        new AsyncCompletedEventArgs(
+                                            new ServerException("Authenticiation Failed"), true, response));
+                                }
+                            }
+                            QuiteConnection(out response, out code);
+                            return false;
+                        }
+
+                        break;
+
+                    case AuthenticationType.PlainText:
+
+                        if (!AuthenticateAsPlainText(out response, out code))
+                        {
+                            if (code == 501)
+                            {
+                                if (SendCompleted != null)
+                                {
+                                    SendCompleted(this,
+                                        new AsyncCompletedEventArgs(
+                                         new ServerException("Service Does not support Base64 Encoding. Please check authentification type"), true, response));
+                                }
+                            }
+                            if (code == 535)
+                            {
+                                if (SendCompleted != null)
+                                {
+                                    SendCompleted(this,
+                                        new AsyncCompletedEventArgs(
+                                            new ServerException("SMTP client authenticates but the username or password is incorrect"), true, response));
+                                }
+                            }
+                            else
+                            {
+                                if (SendCompleted != null)
+                                {
+                                    SendCompleted(this,
+                                        new AsyncCompletedEventArgs(
+                                            new ServerException("Authenticiation Failed"), true, response));
+                                }
+                            }
+                            QuiteConnection(out response, out code);
+                            return false;
+                        }
+                        break;
+                }
+            }
+    
+            return true;
+        }
+
         #region MessageSenders
+
         /// <summary>
-		/// Send the message.
-		/// </summary>
-		public void SendMail(AbstractMailMessage message)
+        /// Send the message.
+        /// </summary>
+        public void SendMail(AbstractMailMessage message)
         {
             MailMessage = (MimeMailMessage) message;
-			lock(this)
-			{
-				//do some sanity checking
-				if(string.IsNullOrWhiteSpace(_host))
-				{
-					throw new ArgumentException("There wasn't any host address found for the mail.");
-				}
-				if(String.IsNullOrEmpty(MailMessage.From.Address))
-				{
-					throw new Exception("There wasn't any sender for the message");
-				}
-				if(MailMessage.To.Count == 0)
-				{
-					throw new Exception("Please specifie at least one reciever for the message");
-				}
-				//set up initial connection
-				_con = new SmtpSocketConnection();
-			    if (ClientCertificates != null)
-			    {
-			        _con.clientcerts = ClientCertificates;
-			    }
-				if(_port <= 0) _port = 465;
-				_con.Open(_host, _port,EnableSsl);
-				var buf = new StringBuilder();
-				string response;
-				int code;
-				//read greeting
-				_con.GetReply(out response, out code);
-				//introduce ourselves
-        if(_authMode == AuthenticationType.UseDefualtCridentials)
-        {
-          buf.Append("HELO ");
-          buf.Append(_host);
-          _con.SendCommand(buf.ToString());
-          _con.GetReply(out response, out code);
-        }
-        else
-        {
-          buf.Append("EHLO ");
-          buf.Append(_host);
-          _con.SendCommand(buf.ToString());
-          _con.GetReply(out response, out code);          
-          switch(_authMode)
-          {
-            case AuthenticationType.Base64:
-              _con.SendCommand(AuthExtension+Gap + AuthLogin);
-              _con.GetReply(out response, out code);              
-              _con.SendCommand(Convert.ToBase64String(Encoding.ASCII.GetBytes(_user)));
-              _con.GetReply(out response, out code);
-              _con.SendCommand(Convert.ToBase64String(Encoding.ASCII.GetBytes(_password)));
-              _con.GetReply(out response, out code);
-              break;
+            lock (this)
+            {
+                if (string.IsNullOrWhiteSpace(_host))
+                {
+                    throw new ArgumentException("There wasn't any host address found for the mail.");
+                }
+                if (_authMode != AuthenticationType.UseDefualtCridentials)
+                {
+                    if (string.IsNullOrWhiteSpace(_user))
+                    {
+                        throw new ArgumentException(
+                            "You must specify user name when you are not using defualt credentials");
+                    }
 
-            case AuthenticationType.PlainText:
-              _con.SendCommand( AuthExtension+ Gap+AuthLogin + Gap+ AuthPlian);
-              _con.GetReply(out response, out code);          
-              _con.SendCommand(_user);
-              _con.GetReply(out response, out code);
-              _con.SendCommand(_password);
-              _con.GetReply(out response, out code);
-              break;
-          }
-        }
-        buf.Length = 0;
-				buf.Append("MAIL FROM:<");
-				buf.Append(MailMessage.From);
-				buf.Append(">");
-				_con.SendCommand(buf.ToString());
-				_con.GetReply(out response, out code);
-				buf.Length = 0;			
-				//set up list of to addresses
-				foreach(MailAddress o in MailMessage.To)
-				{
-					buf.Append("RCPT TO:<");
-					buf.Append(o);
-					buf.Append(">");
-					_con.SendCommand(buf.ToString());
-					_con.GetReply(out response, out code);
-					buf.Length = 0;
-				}
-        //set up list of cc addresses
-        buf.Length = 0;			
-        foreach(MailAddress o in MailMessage.CC)
-        {
-          buf.Append("RCPT TO:<");
-          buf.Append(o);
-          buf.Append(">");
-          _con.SendCommand(buf.ToString());
-          _con.GetReply(out response, out code);
-          buf.Length = 0;
-        }
-        //set up list of bcc addresses
-        buf.Length = 0;			
-        foreach(MailAddress o in MailMessage.Bcc)
-        {          
-          buf.Append("RCPT TO:<");
-          buf.Append(o);
-          buf.Append(">");
-          _con.SendCommand(buf.ToString());
-          _con.GetReply(out response, out code);
-          buf.Length = 0;
-        }
-        buf.Length = 0;			
-        //set headers
-				_con.SendCommand("DATA");
-				_con.SendCommand("X-Mailer: SslMail.SmtpEmailer");
-				DateTime today = DateTime.Now;			
-				buf.Append("DATE: ");
-				buf.Append(today.ToLongDateString());
-				_con.SendCommand(buf.ToString());
-				buf.Length = 0;
-				buf.Append("FROM: ");
-				buf.Append(MailMessage.From);
-				_con.SendCommand(buf.ToString());
-				buf.Length = 0;
-				buf.Append("TO: ");
-				buf.Append(MailMessage.To[0]);
-				for(int x = 1; x < MailMessage.To.Count; ++x)
-				{
-					buf.Append(";");
-					buf.Append(MailMessage.To[x]);				
-				}
-				_con.SendCommand(buf.ToString());
-        if(MailMessage.CC.Count > 0)
-        {
-          buf.Length = 0;
-          buf.Append("CC: ");
-          buf.Append(MailMessage.CC[0]);
-          for(int x = 1; x < MailMessage.CC.Count; ++x)
-          {
-            buf.Append(";");
-            buf.Append(MailMessage.CC[x]);				
-          }
-          _con.SendCommand(buf.ToString());
-        }
-        if(MailMessage.Bcc.Count > 0)
-        {
-          buf.Length = 0;
-          buf.Append("BCC: ");
-          buf.Append(MailMessage.Bcc[0]);
-          for (int x = 1; x < MailMessage.Bcc.Count; ++x)
-          {
-            buf.Append(";");
-            buf.Append(MailMessage.Bcc[x]);				
-          }
-          _con.SendCommand(buf.ToString());
-        }
-        buf.Length = 0;
-				buf.Append("REPLY-TO: ");
-				buf.Append(MailMessage.From);
-				_con.SendCommand(buf.ToString());
-				buf.Length = 0;			
-				buf.Append("SUBJECT: ");
-				buf.Append(MailMessage.Subject);
-				_con.SendCommand(buf.ToString());				
-				buf.Length = 0;
-				//declare mime info for message
-				_con.SendCommand("MIME-Version: 1.0");
-				if(!_sendAsHtml || (_sendAsHtml && ((MimeAttachment.InlineCount > 0) || (MimeAttachment.AttachCount > 0))))
-				{
-					_con.SendCommand("Content-Type: multipart/mixed; boundary=\"#SEPERATOR1#\"\r\n");				
-					_con.SendCommand("This is a multi-part message.\r\n\r\n--#SEPERATOR1#");
-				}
-				if(_sendAsHtml)
-				{
-					_con.SendCommand("Content-Type: multipart/related; boundary=\"#SEPERATOR2#\"");				
-					_con.SendCommand("Content-Transfer-Encoding: quoted-printable\r\n");		
-					_con.SendCommand("--#SEPERATOR2#");
-					
-				}
-				if(_sendAsHtml && MimeAttachment.InlineCount > 0)
-				{
-					_con.SendCommand("Content-Type: multipart/alternative; boundary=\"#SEPERATOR3#\"");				
-					_con.SendCommand("Content-Transfer-Encoding: quoted-printable\r\n");		
-					_con.SendCommand("--#SEPERATOR3#");
-					_con.SendCommand("Content-Type: text/html; charset=iso-8859-1");				
-					_con.SendCommand("Content-Transfer-Encoding: quoted-printable\r\n");		
-					_con.SendCommand(BodyToQuotedPrintable());
-					_con.SendCommand("--#SEPERATOR3#");
-					_con.SendCommand("Content-Type: text/plain; charset=iso-8859-1");									
-					_con.SendCommand("\r\nIf you can see this, then your email client does not support MHTML messages.");
-					_con.SendCommand("--#SEPERATOR3#--\r\n");
-					_con.SendCommand("--#SEPERATOR2#\r\n");
-					SendAttachments(buf, AttachmentLocation.Inline);					
-				}
-				else
-				{
-					if(_sendAsHtml)
-					{
-						_con.SendCommand("Content-Type: text/html; charset=iso-8859-1");				
-						_con.SendCommand("Content-Transfer-Encoding: quoted-printable\r\n");		
-					}
-					else
-					{
-						_con.SendCommand("Content-Type: text/plain; charset=iso-8859-1");				
-						_con.SendCommand("Content-Transfer-Encoding: quoted-printable\r\n");		
-					}
-					_con.SendCommand(BodyToQuotedPrintable());
-				}
-				if(_sendAsHtml)
-				{
-					_con.SendCommand("\r\n--#SEPERATOR2#--");
-				}
-				if(MimeAttachment.AttachCount > 0)
-				{
-					//send normal attachments
-					SendAttachments(buf, AttachmentLocation.Attachmed);
-				}
-				//finish up message
-				_con.SendCommand("");
-				if(MimeAttachment.InlineCount > 0 || MimeAttachment.AttachCount > 0)
-				{
-					_con.SendCommand("--#SEPERATOR1#--");
-				}
-				_con.SendCommand(".");
-				_con.GetReply(out response, out code);
-        Console.WriteLine(response);
-				_con.SendCommand("QUIT");
-				_con.GetReply(out response, out code);
-        Console.WriteLine(response);
-				_con.Close();
-				_con = null;
-                
-				if(SendCompleted != null)
-				{
-					SendCompleted(this, new AsyncCompletedEventArgs(null,false,response));
-				}
-			}
-		}
+                    if (string.IsNullOrWhiteSpace(_password))
+                    {
+                        throw new ArgumentException(
+                            "You must specify password when you are not using defualt credentials");
+                    }
+                }
 
-		/// <summary>
+                if (InCall)
+                {
+                    throw new InvalidOperationException("Mime mailer is busy already, please try later");
+                }
+
+                if (String.IsNullOrEmpty(MailMessage.From.Address))
+                {
+                    throw new Exception("There wasn't any sender for the message");
+                }
+                if (MailMessage.To.Count == 0)
+                {
+                    throw new Exception("Please specifie at least one reciever for the message");
+                }
+
+                InCall = true;
+                //set up initial connection
+                if (EsablishSmtp())
+                {
+                    string response;
+                    int code;
+                    var buf = new StringBuilder();
+                    buf.Length = 0;
+                    buf.Append(SmtpCommands.Mail);
+                    buf.Append("<");
+                    buf.Append(MailMessage.From);
+                    buf.Append(">");
+                    _con.SendCommand(buf.ToString());
+                    _con.GetReply(out response, out code);
+                    buf.Length = 0;
+                    //set up list of to addresses
+                    foreach (MailAddress recipient in MailMessage.To)
+                    {
+                        buf.Append(SmtpCommands.Recipient);
+                        buf.Append("<");
+
+                        buf.Append(recipient);
+                        buf.Append(">");
+                        _con.SendCommand(buf.ToString());
+                        _con.GetReply(out response, out code);
+                        buf.Length = 0;
+                    }
+                    //set up list of cc addresses
+                    buf.Length = 0;
+                    foreach (MailAddress recipient in MailMessage.CC)
+                    {
+                        buf.Append(SmtpCommands.Recipient);
+                        buf.Append("<");
+                        buf.Append(recipient);
+                        buf.Append(">");
+                        _con.SendCommand(buf.ToString());
+                        _con.GetReply(out response, out code);
+                        buf.Length = 0;
+                    }
+                    //set up list of bcc addresses
+                    buf.Length = 0;
+                    foreach (MailAddress o in MailMessage.Bcc)
+                    {
+                        buf.Append(SmtpCommands.Recipient);
+                        buf.Append("<");
+                        buf.Append(o);
+                        buf.Append(">");
+                        _con.SendCommand(buf.ToString());
+                        _con.GetReply(out response, out code);
+                        buf.Length = 0;
+                    }
+                    buf.Length = 0;
+                    //set headers
+                    _con.SendCommand(SmtpCommands.Data);
+                    _con.SendCommand("X-Mailer: AIM.MimeMailer");
+                    DateTime today = DateTime.Now;
+                    buf.Append(SmtpCommands.Date);
+                    buf.Append(today.ToLongDateString());
+                    _con.SendCommand(buf.ToString());
+                    buf.Length = 0;
+                    buf.Append(SmtpCommands.From);
+                    buf.Append(MailMessage.From);
+                    _con.SendCommand(buf.ToString());
+                    buf.Length = 0;
+                    buf.Append(SmtpCommands.To);
+                    buf.Append(MailMessage.To[0]);
+                    for (int x = 1; x < MailMessage.To.Count; ++x)
+                    {
+                        buf.Append(";");
+                        buf.Append(MailMessage.To[x]);
+                    }
+                    _con.SendCommand(buf.ToString());
+                    if (MailMessage.CC.Count > 0)
+                    {
+                        buf.Length = 0;
+                        buf.Append(SmtpCommands.Cc);
+                        buf.Append(MailMessage.CC[0]);
+                        for (int x = 1; x < MailMessage.CC.Count; ++x)
+                        {
+                            buf.Append(";");
+                            buf.Append(MailMessage.CC[x]);
+                        }
+                        _con.SendCommand(buf.ToString());
+                    }
+                    if (MailMessage.Bcc.Count > 0)
+                    {
+                        buf.Length = 0;
+                        buf.Append(SmtpCommands.Bcc);
+                        buf.Append(MailMessage.Bcc[0]);
+                        for (int x = 1; x < MailMessage.Bcc.Count; ++x)
+                        {
+                            buf.Append(";");
+                            buf.Append(MailMessage.Bcc[x]);
+                        }
+                        _con.SendCommand(buf.ToString());
+                    }
+                    buf.Length = 0;
+                    buf.Append(SmtpCommands.ReplyTo);
+                    buf.Append(MailMessage.From);
+                    _con.SendCommand(buf.ToString());
+                    buf.Length = 0;
+                    buf.Append(SmtpCommands.Subject);
+                    buf.Append(MailMessage.Subject);
+                    _con.SendCommand(buf.ToString());
+                    buf.Length = 0;
+                    //declare mime info for message
+                    _con.SendCommand("MIME-Version: 1.0");
+                    if (!_sendAsHtml ||
+                        (_sendAsHtml && ((MimeAttachment.InlineCount > 0) || (MimeAttachment.AttachCount > 0))))
+                    {
+                        _con.SendCommand("Content-Type: multipart/mixed; boundary=\"#SEPERATOR1#\"\r\n");
+                        _con.SendCommand("This is a multi-part message.\r\n\r\n--#SEPERATOR1#");
+                    }
+                    if (_sendAsHtml)
+                    {
+                        _con.SendCommand("Content-Type: multipart/related; boundary=\"#SEPERATOR2#\"");
+                        _con.SendCommand("Content-Transfer-Encoding: quoted-printable\r\n");
+                        _con.SendCommand("--#SEPERATOR2#");
+
+                    }
+                    if (_sendAsHtml && MimeAttachment.InlineCount > 0)
+                    {
+                        _con.SendCommand("Content-Type: multipart/alternative; boundary=\"#SEPERATOR3#\"");
+                        _con.SendCommand("Content-Transfer-Encoding: quoted-printable\r\n");
+                        _con.SendCommand("--#SEPERATOR3#");
+                        _con.SendCommand("Content-Type: text/html; charset=iso-8859-1");
+                        _con.SendCommand("Content-Transfer-Encoding: quoted-printable\r\n");
+                        _con.SendCommand(BodyToQuotedPrintable());
+                        _con.SendCommand("--#SEPERATOR3#");
+                        _con.SendCommand("Content-Type: text/plain; charset=iso-8859-1");
+                        _con.SendCommand(
+                            "\r\nIf you can see this, then your email client does not support MHTML messages.");
+                        _con.SendCommand("--#SEPERATOR3#--\r\n");
+                        _con.SendCommand("--#SEPERATOR2#\r\n");
+                        SendAttachments(buf, AttachmentLocation.Inline);
+                    }
+                    else
+                    {
+                        if (_sendAsHtml)
+                        {
+                            _con.SendCommand("Content-Type: text/html; charset=iso-8859-1");
+                            _con.SendCommand("Content-Transfer-Encoding: quoted-printable\r\n");
+                        }
+                        else
+                        {
+                            _con.SendCommand("Content-Type: text/plain; charset=iso-8859-1");
+                            _con.SendCommand("Content-Transfer-Encoding: quoted-printable\r\n");
+                        }
+                        _con.SendCommand(BodyToQuotedPrintable());
+                    }
+                    if (_sendAsHtml)
+                    {
+                        _con.SendCommand("\r\n--#SEPERATOR2#--");
+                    }
+                    if (MimeAttachment.AttachCount > 0)
+                    {
+                        //send normal attachments
+                        SendAttachments(buf, AttachmentLocation.Attachmed);
+                    }
+                    //finish up message
+                    _con.SendCommand("");
+                    if (MimeAttachment.InlineCount > 0 || MimeAttachment.AttachCount > 0)
+                    {
+                        _con.SendCommand("--#SEPERATOR1#--");
+                    }
+
+                    _con.SendCommand(".");
+                    _con.GetReply(out response, out code);
+
+                    var replymessage = response;
+
+                    _con.SendCommand(SmtpCommands.Quit);
+                    _con.GetReply(out response, out code);
+                    Console.WriteLine(response);
+                    _con.Close();
+                    InCall = false;
+
+                    if (SendCompleted != null)
+                    {
+                        SendCompleted(this, new AsyncCompletedEventArgs(null, false, response));
+                    }
+                }
+            }
+        }
+
+        public bool InCall { get; private set; }
+
+        private bool AuthenticateAsPlainText(out string response, out int code)
+        {
+            _con.SendCommand(SmtpCommands.Auth + SmtpCommands.AuthLogin + Gap + SmtpCommands.AuthPlian);
+            _con.GetReply(out response, out code);
+            Console.Out.WriteLine("Reply to Plain 1: " + response + " Code :" + code);
+
+            _con.SendCommand(_user);
+            _con.GetReply(out response, out code);
+            Console.Out.WriteLine("Reply to Plain 2: " + response + " Code :" + code);
+
+            _con.SendCommand(_password);
+            _con.GetReply(out response, out code);
+            Console.Out.WriteLine("Reply to Plain 3: " + response + " Code :" + code);
+            if (code == 235)
+                return true;
+            return false;
+        
+        }
+
+        private bool AuthenticateAsBase64(out string response, out int code)
+        {
+            _con.SendCommand(SmtpCommands.Auth + SmtpCommands.AuthLogin);
+            _con.GetReply(out response, out code);
+            Console.Out.WriteLine("Reply to b64 1: " + response + " Code :" + code);
+
+            _con.SendCommand(Convert.ToBase64String(Encoding.ASCII.GetBytes(_user)));
+            _con.GetReply(out response, out code);
+            Console.Out.WriteLine("Reply to b64 2: " + response + " Code :" + code);
+
+            _con.SendCommand(Convert.ToBase64String(Encoding.ASCII.GetBytes(_password)));
+
+            _con.GetReply(out response, out code);
+            Console.Out.WriteLine("Reply to b64 3: " + response + " Code :" + code);
+
+            if (code == 235)
+                return true;
+            return false;
+        }
+
+        private void ParseResponse(string response, int code)
+        {
+            
+        }
+
+        private void QuiteConnection(out string response, out int code)
+        {
+            _con.SendCommand(SmtpCommands.Quit);
+            _con.GetReply(out response, out code);
+            Console.WriteLine(response);
+            _con.Close();
+            InCall = false;
+            _con = null;
+        }
+
+        /// <summary>
 		/// Send the message on a seperate thread.
 		/// </summary>
 		public void SendMailAsync(AbstractMailMessage message = null)
@@ -540,5 +795,71 @@ namespace AegisImplicitMail
             }
             _mailMessage.Dispose();
         }
-	}
+
+        internal enum SupportedAuth
+        {
+            None = 0,
+            Login = 1,
+            NTLM = 2,
+            GSSAPI = 4,
+            WDigest = 8,
+        }
+
+        internal void ParseExtensions(string[] extensions)
+        {
+            int sizeOfAuthExtension = AuthExtension.Length;
+               
+            var supportedAuth = SupportedAuth.None;
+            foreach (string extension in extensions)
+            {
+                var realextension = extension;
+                if (realextension.Length>3)
+                realextension = extension.Substring(4);
+                Console.Out.WriteLine("Extenstion :" + extension);
+                if (String.Compare(realextension, 0, AuthExtension, 0,
+                    sizeOfAuthExtension, StringComparison.OrdinalIgnoreCase) == 0)
+                {
+                    // remove the AUTH text including the following character 
+                    // to ensure that split only gets the modules supported
+                    string[] authTypes =
+                        realextension.Remove(0, sizeOfAuthExtension).Split(new char[] { ' ', '=' },
+                        StringSplitOptions.RemoveEmptyEntries);
+                    foreach (string authType in authTypes)
+                    {
+                        if (String.Compare(authType, SmtpCommands.AuthLogin, StringComparison.OrdinalIgnoreCase) == 0)
+                        {
+                            supportedAuth |= SupportedAuth.Login;
+                        }
+#if !FEATURE_PAL
+                        else if (String.Compare(authType, AuthNtlm, StringComparison.OrdinalIgnoreCase) == 0)
+                        {
+                            supportedAuth |= SupportedAuth.NTLM;
+                        }
+                        else if (String.Compare(authType, AuthGssapi, StringComparison.OrdinalIgnoreCase) == 0)
+                        {
+                            supportedAuth |= SupportedAuth.GSSAPI;
+                        }
+                        else if (String.Compare(authType, AuthWDigest, StringComparison.OrdinalIgnoreCase) == 0)
+                        {
+                            supportedAuth |= SupportedAuth.WDigest;
+                        }
+#endif // FEATURE_PAL
+                    }
+                }
+                else if (String.Compare(realextension, 0, "dsn ", 0, 3, StringComparison.OrdinalIgnoreCase) == 0)
+                {
+                    DsnEnabled = true;
+                }
+                else if (String.Compare(realextension, 0, SmtpCommands.StartTls, 0, 8, StringComparison.OrdinalIgnoreCase) == 0)
+                {
+                    SupportsTls = true;
+                }
+                else if (String.Compare(realextension, 0, SmtpCommands.Utf8, 0, 8, StringComparison.OrdinalIgnoreCase) == 0)
+                {
+                    ServerSupportsEai = true;
+                }
+            }
+        }
+
+    }
 }

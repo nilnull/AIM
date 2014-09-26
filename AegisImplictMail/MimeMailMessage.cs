@@ -23,6 +23,12 @@ namespace AegisImplicitMail
         private MimeAttachmentCollection _attachments;
         private bool _disposed = false;
 
+        public override string ToString()
+        {
+
+            return base.ToString();
+        }
+
         /// <summary>
         /// List of files to attach. 
         /// Note : Please do not use Attachment

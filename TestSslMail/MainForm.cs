@@ -16,14 +16,23 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using AegisImplicitMail;
 
 namespace TestSslMail
 {
     public partial class MainForm : Form
     {
+
+        string host = "smtp.gmail.com";
+        string user = "yourusername";
+        string pass = "youpassword";
+        string mail = "you@gmail.com";
+
+
         public MainForm()
         {
             InitializeComponent();
@@ -38,5 +47,47 @@ namespace TestSslMail
         {
             new SmimeMessage().ShowDialog();
         }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            var mymessage = new MimeMailMessage();
+            mymessage.From = new MimeMailAddress(mail);
+            mymessage.To.Add(mail);
+            mymessage.Subject = "test";
+            mymessage.Body = "body";
+            var mailer = new MimeMailer(host, 465);
+               mailer.User= user;
+            mailer.Password = pass;
+            mailer.EnableSsl = true;
+            mailer.EnableImplicitSsl = true;
+            mailer.AuthenticationMode = AuthenticationType.Base64;
+            mailer.SendCompleted += compEvent;
+            mailer.SendMailAsync(mymessage);
+        }
+
+        private void compEvent(object sender, AsyncCompletedEventArgs e)
+        {
+            if (e.UserState!=null)
+                Console.Out.WriteLine(e.UserState.ToString());
+            Console.Out.WriteLine("is it canceled? " + e.Cancelled);
+
+            if (e.Error != null)
+                Console.Out.WriteLine("Error : " + e.Error.Message);
+
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            
+            var mailer = new MimeMailer(host, 465, user, pass);
+            mailer.Timeout = 200;
+            mailer.SendCompleted += compEvent;
+            mailer.TestConnection();
+
+            Console.Out.WriteLine(mailer.SupportsTls );
+       
+        }
+
+        }
     }
-}
+

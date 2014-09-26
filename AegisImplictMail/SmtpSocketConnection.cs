@@ -84,14 +84,15 @@ namespace AegisImplicitMail
 	    /// <param name="port">Port to connect to.</param>
 	    /// <param name="isSsl">Enable SSL if it's an ssl</param>
 	    /// <exception cref="ArgumentException"></exception>
-	    internal void Open(string host, int port = 465, bool isSsl = true)
+	    internal void Open(string host, int port = 465, bool isSsl = true, int timeout =100000 )
 		{
             if (string.IsNullOrWhiteSpace(host) || port <= 0)
             {
                 throw new ArgumentException("Invalid Argument found.");
             }
             _socket.Connect(host, port);
-
+	        _socket.SendTimeout = timeout;
+	        _socket.ReceiveTimeout = timeout;
 	        if (isSsl)
 	        {
 
@@ -169,19 +170,26 @@ namespace AegisImplicitMail
 		/// <param name="code">Status code from server.</param>
 		internal void GetReply(out string reply, out int code)
 		{
-      String s;
-      s = _reader.ReadLine();
-      reply = s;
-      while(s != null && s.Substring(3, 1).Equals("-"))
-      {
-        s = _reader.ReadLine();
-        if(s != null)
-        {
-          reply += s + "\r\n";
-        }
-      }
-		    Console.Out.WriteLine("Reply : " + reply);
-			code = reply == null ? -1 : Int32.Parse(reply.Substring(0, 3));			
+		    try
+		    {
+		        String s;
+		        s = _reader.ReadLine();
+		        reply = s;
+		        while (s != null && s.Substring(3, 1).Equals("-"))
+		        {
+		            s = _reader.ReadLine();
+		            if (s != null)
+		            {
+		                reply += s + "\r\n";
+		            }
+		        }
+		        code = reply == null ? -1 : Int32.Parse(reply.Substring(0, 3));
+		    }
+		    catch (Exception err)
+		    {
+		        reply = "Error in reading response from server. " + err.Message;
+		        code = -1;
+		    }
 		}
 
 	    public void Dispose()

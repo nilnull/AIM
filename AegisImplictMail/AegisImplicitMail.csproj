@@ -56,6 +56,7 @@
     <Compile Include="SmimeMailer.cs" />
     <Compile Include="MimeAttachment.cs" />
     <Compile Include="MimeAttachmentCollection.cs" />
+    <Compile Include="SmtpCommands.cs" />
     <Compile Include="SmtpSocketConnection.cs" />
     <Compile Include="MimeMailAddress.cs" />
     <Compile Include="SmtpSocketClient.cs" />

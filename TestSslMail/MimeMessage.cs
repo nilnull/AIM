@@ -135,14 +135,22 @@ namespace TestSslMail
                     emailer.AuthenticationMode = AuthenticationType.PlainText;
                 }
             }
+            else
+            {
+                emailer.AuthenticationMode = AuthenticationType.UseDefualtCridentials;
+            }
             emailer.SendCompleted += SendCompleted;
             emailer.SendMailAsync(emailer.MailMessage);
         }
 
         private void SendCompleted(object sender, AsyncCompletedEventArgs asynccompletedeventargs)
         {
+            if (!String.IsNullOrEmpty(asynccompletedeventargs.UserState.ToString()))
+            MessageBox.Show(asynccompletedeventargs.UserState.ToString());
+            Console.Out.WriteLine("is it canceled? " + asynccompletedeventargs.Cancelled);
 
-            Console.Out.WriteLine(asynccompletedeventargs.UserState.ToString());
+            if (asynccompletedeventargs.Error !=null)
+            Console.Out.WriteLine("Error : " +asynccompletedeventargs.Error.Message);
         }
 
         private void button3_Click(object sender, EventArgs e)

@@ -428,12 +428,11 @@ namespace AegisImplicitMail
         # endregion
 
         # region Convertor Operators
-
         /// <summary>
         /// Converts the message to a System.Net.Mail.MailMessage instance.
         /// </summary>
         /// <returns>A System.Net.Mail.MailMessage instance.</returns>
-        public MimeMailMessage ToSmtpMailMessage()
+        private MimeMailMessage ToSmtpMailMessage()
         {
             var returnValue = new MimeMailMessage();
             foreach (var attachment1 in Attachments)
@@ -518,7 +517,6 @@ namespace AegisImplicitMail
 
             return returnValue;
         }
-
 
         /// <summary>
         /// To cast To normal Mail Message
