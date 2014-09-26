@@ -11,14 +11,7 @@
  * Aegis Implicit Mail is an implict ssl package to use mine/smime messages on implict ssl servers
  */
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Net.Mail;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using AegisImplicitMail;
 
@@ -28,9 +21,10 @@ namespace TestSslMail
     {
 
         string host = "smtp.gmail.com";
-        string user = "yourusername";
-        string pass = "youpassword";
-        string mail = "you@gmail.com";
+        string user = "yourmail@gmail.com";
+        string pass = "password#";
+        string mail = "yourmail@gmail.com";
+        private int tlsPort = 587;
 
 
         public MainForm()
@@ -58,7 +52,7 @@ namespace TestSslMail
             var mailer = new MimeMailer(host, 465);
                mailer.User= user;
             mailer.Password = pass;
-            mailer.EnableSsl = true;
+            ((SmtpSocketClient) mailer).SslType = SslMode.Ssl;
             mailer.EnableImplicitSsl = true;
             mailer.AuthenticationMode = AuthenticationType.Base64;
             mailer.SendCompleted += compEvent;
@@ -85,6 +79,30 @@ namespace TestSslMail
             mailer.TestConnection();
 
             Console.Out.WriteLine(mailer.SupportsTls );
+       
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+
+            var mymessage = new MimeMailMessage
+            {
+                From = new MimeMailAddress(mail),
+             Body  = "body",
+             Subject = "test explicit"
+            };
+            mymessage.To.Add(mail);
+            var mailer = new MimeMailer(host, tlsPort)
+            {
+                User = user,
+                Password = pass,
+                SslType = SslMode.Tls,
+                EnableImplicitSsl = false,
+                AuthenticationMode = AuthenticationType.Base64
+            };
+            mailer.SendCompleted += compEvent;
+            mailer.SendMailAsync(mymessage);
+
        
         }
 

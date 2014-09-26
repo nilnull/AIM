@@ -32,7 +32,11 @@ namespace TestSslMail
         public MimeMessage()
         {
             InitializeComponent();
-           ResetAll();
+            var ssltypes = new SslMode();
+            comboBox1.DataSource = Enum.GetValues(ssltypes.GetType());
+            comboBox1.SelectedIndex = 0;
+
+            ResetAll();
             
         }
 
@@ -42,6 +46,7 @@ namespace TestSslMail
             CcList = new List<IMailAddress>();
             BccList = new List<IMailAddress>();
             _senderMail = null;
+            host.Text = "smtp.gmail.com";
             to.Text = "";
             cc.Text = "";
             bcc.Text = "";
@@ -100,11 +105,13 @@ namespace TestSslMail
             mailMessage.Sender = _senderMail;
             mailMessage.IsBodyHtml = sendAsHtml;
             mailMessage.From = _senderMail;
-            var emailer = new MimeMailer(hostAddress,portNo);
-            emailer.Host = hostAddress;
-            emailer.Port = portNo;
-            emailer.MailMessage = mailMessage;
-            emailer.EnableSsl = true;
+            var emailer = new MimeMailer(hostAddress,portNo)
+            {
+                Host = hostAddress,
+                Port = portNo,
+                MailMessage = mailMessage,
+                SslType = (SslMode)comboBox1.SelectedItem
+            };
 
             for (int x = 0; x < ToList.Count; ++x)
             {

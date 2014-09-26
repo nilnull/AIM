@@ -129,7 +129,7 @@ namespace AegisImplicitMail
             set { _mailMessage = value; }
         }
 
-        public bool EnableSsl {get; set; }
+        public SslMode SslType { get; set; }
 
         public bool DsnEnabled {get; private set; }
 
@@ -153,9 +153,10 @@ namespace AegisImplicitMail
         /// <param name="useHtml">Determine if mail message is html or not</param>
         /// <param name="msg">Message to send</param>
         /// <param name="onMailSend">This function will be called after mail is sent</param>
-        /// <param name="enableSsl">Your connection is Ssl conection?</param>
+        /// <param name="sslTypesl">Your connection is Ssl conection?</param>
         /// <exception cref="ArgumentNullException">If username and pass is needed and not provided</exception>
-        public SmtpSocketClient(string host, int port =465, string username =null, string password = null, AuthenticationType authenticationMode = AuthenticationType.Base64, bool useHtml =true, MimeMailMessage msg =null , SendCompletedEventHandler onMailSend =null, bool enableSsl = true ):this(msg)
+        public SmtpSocketClient(string host, int port = 465, string username = null, string password = null, AuthenticationType authenticationMode = AuthenticationType.Base64, bool useHtml = true, MimeMailMessage msg = null, SendCompletedEventHandler onMailSend = null, SslMode sslType = SslMode.None)
+            : this(msg)
         {
             if ((AuthenticationMode != AuthenticationType.UseDefualtCridentials) &&
                 (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password)))
@@ -171,18 +172,18 @@ namespace AegisImplicitMail
             _mailMessage = msg;
             _sendAsHtml = useHtml;
             SendCompleted = onMailSend;
-            EnableSsl = enableSsl;
+            SslType = sslType;
 
         }
 
-        public SmtpSocketClient(MimeMailMessage msg =null, bool enableSsl =true)
+        public SmtpSocketClient(MimeMailMessage msg = null, SslMode sslType = SslMode.None)
         {
 		    if (msg == null)
 		    {
 		        msg = new MimeMailMessage();
 		    }
             _mailMessage = msg;
-            EnableSsl = enableSsl;
+            SslType = sslType;
         }
 
 #endregion
@@ -232,7 +233,7 @@ namespace AegisImplicitMail
             if (_port <= 0) _port = 465;
             try
             {
-                _con.Open(_host, _port, EnableSsl,Timeout);
+                _con.Open(_host, _port, SslType,Timeout);
             }
             catch (Exception err)
             {
@@ -299,6 +300,23 @@ namespace AegisImplicitMail
                 ParseExtensions(lines);
 
                 Console.Out.WriteLine("Reply to EHLO: " + response + " Code :" + code);
+
+                if (SslType == SslMode.Tls || SslType == SslMode.Auto)
+                {
+                    if (SupportsTls)
+                    {
+                        _con.SendCommand(SmtpCommands.StartTls);
+                        _con.GetReply(out response, out code);
+                        Console.Out.WriteLine("STARTTLS result : " + response);
+                        _con.SwitchToSsl();
+                    }
+                    else
+                    {
+
+                        return false;
+                    }
+                }
+               
                 switch (_authMode)
                 {
                     case AuthenticationType.Base64:
@@ -348,7 +366,7 @@ namespace AegisImplicitMail
                                 {
                                     SendCompleted(this,
                                         new AsyncCompletedEventArgs(
-                                         new ServerException("Service Does not support Base64 Encoding. Please check authentification type"), true, response));
+                                         new ServerException("Service Does not support plain text Encoding. Please check authentification type"), true, response));
                                 }
                             }
                             if (code == 535)
@@ -434,6 +452,8 @@ namespace AegisImplicitMail
                     buf.Append("<");
                     buf.Append(MailMessage.From);
                     buf.Append(">");
+                    
+                   
                     _con.SendCommand(buf.ToString());
                     _con.GetReply(out response, out code);
                     buf.Length = 0;
@@ -613,7 +633,8 @@ namespace AegisImplicitMail
         {
             _con.SendCommand(SmtpCommands.Auth + SmtpCommands.AuthLogin + Gap + SmtpCommands.AuthPlian);
             _con.GetReply(out response, out code);
-            Console.Out.WriteLine("Reply to Plain 1: " + response + " Code :" + code);
+            if (code == 501)
+                return false;
 
             _con.SendCommand(_user);
             _con.GetReply(out response, out code);
@@ -632,7 +653,10 @@ namespace AegisImplicitMail
         {
             _con.SendCommand(SmtpCommands.Auth + SmtpCommands.AuthLogin);
             _con.GetReply(out response, out code);
-            Console.Out.WriteLine("Reply to b64 1: " + response + " Code :" + code);
+            if (code == 501)
+            {
+                return false;
+            }
 
             _con.SendCommand(Convert.ToBase64String(Encoding.ASCII.GetBytes(_user)));
             _con.GetReply(out response, out code);

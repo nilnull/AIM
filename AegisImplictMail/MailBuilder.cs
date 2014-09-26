@@ -30,10 +30,10 @@ namespace AegisImplicitMail
         private readonly MailPriority _messagePriority;
         private readonly AuthenticationType _authenticationType;
 
-        public MailBuilder(string host, int port, string userName, string passWord, string senderEmailAddresss, string senderDisplayName, bool isSsl = false, bool useHtml = true, bool implictSsl = false, bool smime = false, MailPriority messagePriority = MailPriority.Normal, SendCompletedEventHandler onSendCallBack = null, bool encrypt =false, bool sign = false , AuthenticationType authenticationType  = AuthenticationType.PlainText)
+        public MailBuilder(string host, int port, string userName, string passWord, string senderEmailAddresss, string senderDisplayName, SslMode ssl = SslMode.None, bool useHtml = true, bool implictSsl = false, bool smime = false, MailPriority messagePriority = MailPriority.Normal, SendCompletedEventHandler onSendCallBack = null, bool encrypt =false, bool sign = false , AuthenticationType authenticationType  = AuthenticationType.PlainText)
         {
             _passWord = passWord;
-            _isSsl = isSsl;
+            _ssl = ssl;
             _port = port;
             _userName = userName;
             _host = host;
@@ -117,7 +117,7 @@ namespace AegisImplicitMail
             if (attachmentAddress != null)
                 attachmentAddress.ForEach(a=> msg.Attachments.Add(new MimeAttachment(a)));
     
-            var mm = new MimeMailer(_host,_port,_userName,_passWord,_isSsl,true,_messagePriority,_authenticationType);
+            var mm = new MimeMailer(_host,_port,_userName,_passWord,_ssl,true,_messagePriority,_authenticationType);
              mm.Send(msg,_onSendCallBack);
 
    
@@ -185,7 +185,7 @@ namespace AegisImplicitMail
                 
                 client.Host = _host;
                 client.Port = _port;
-                client.EnableSsl = _isSsl;
+                ((SmtpSocketClient) client).SslType = _ssl;
                 if (String.IsNullOrEmpty(_userName))
                     client.AuthenticationMode = AuthenticationType.UseDefualtCridentials;
                 else
@@ -210,7 +210,7 @@ namespace AegisImplicitMail
 
         private readonly string _passWord;
 
-        private readonly bool _isSsl;
+        private readonly SslMode _ssl;
 
         private readonly int _port;
 

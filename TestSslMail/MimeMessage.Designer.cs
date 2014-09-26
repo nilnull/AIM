@@ -37,7 +37,6 @@
             this.label10 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.useSsl = new System.Windows.Forms.RadioButton();
             this.host = new System.Windows.Forms.TextBox();
             this.port = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -61,6 +60,8 @@
             this.fromBtn = new System.Windows.Forms.Button();
             this.label7 = new System.Windows.Forms.Label();
             this.button11 = new System.Windows.Forms.Button();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBoxlogin.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -145,7 +146,8 @@
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.useSsl);
+            this.groupBox1.Controls.Add(this.label3);
+            this.groupBox1.Controls.Add(this.comboBox1);
             this.groupBox1.Controls.Add(this.host);
             this.groupBox1.Controls.Add(this.port);
             this.groupBox1.Controls.Add(this.label2);
@@ -157,14 +159,6 @@
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Setup";
-            // 
-            // useSsl
-            // 
-            this.useSsl.Location = new System.Drawing.Point(270, 15);
-            this.useSsl.Name = "useSsl";
-            this.useSsl.Size = new System.Drawing.Size(49, 24);
-            this.useSsl.TabIndex = 57;
-            this.useSsl.Text = "IsSsl";
             // 
             // host
             // 
@@ -382,6 +376,23 @@
             this.button11.Text = "Reset";
             this.button11.Click += new System.EventHandler(this.button11_Click);
             // 
+            // comboBox1
+            // 
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Location = new System.Drawing.Point(350, 18);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(121, 21);
+            this.comboBox1.TabIndex = 59;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(293, 21);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(51, 13);
+            this.label3.TabIndex = 60;
+            this.label3.Text = "Ssl Mode";
+            // 
             // MimeMessage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -439,8 +450,9 @@
         private System.Windows.Forms.TextBox senderText;
         private System.Windows.Forms.Button button7;
         private System.Windows.Forms.Button button11;
-        private System.Windows.Forms.RadioButton useSsl;
         private System.Windows.Forms.GroupBox groupBoxlogin;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.ComboBox comboBox1;
     }
 }
 

@@ -92,7 +92,7 @@ namespace TestSslMail
             var emailer = new SmimeMailer(hostAddress, portNo)
             {
                 MailMessage = mailMessage,
-                EnableSsl = true
+                SslType = SslMode.Tls
             };
 
             for (int x = 0; x < ToList.Count; ++x)

@@ -21,6 +21,11 @@ using System.Runtime.Remoting.Messaging;
 
 namespace AegisImplicitMail
 {
+
+    public enum SslMode
+    {
+        None = -1, Ssl = 0 ,Tls = 1,Auto =2
+    }
     /// <summary>
     /// Generate Mime Messages
     /// </summary>
@@ -40,10 +45,39 @@ namespace AegisImplicitMail
             }
         }
 
+        private SslMode _ssltype = SslMode.None;
+        public SslMode SslType
+        {
+            get { return _ssltype;}
+            set
+            {
+                switch (value)
+                {
+                    case SslMode.None:
+                        break;
+                    case SslMode.Ssl:
+                        EnableImplicitSsl = true;
+                        break;
+                    case SslMode.Tls:
+                        EnableImplicitSsl = false;
+                        break;
+                    case SslMode.Auto:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException("value");
+                }
+                _ssltype = value;
+                base.SslType = value;
+            }
+        }
         public bool EnableImplicitSsl
         {
             get { return _implictSsl; }
-            set { _implictSsl = value; }
+            set
+            {
+                _implictSsl = value;
+                _ssltype = value ? SslMode.Ssl : SslMode.Tls;
+            }
         }
 
         /// <summary>
@@ -71,19 +105,19 @@ namespace AegisImplicitMail
         /// <param name="port">Port number of server</param>
         /// <param name="userName">User name</param>
         /// <param name="passWord">Password</param>
-        /// <param name="isSsl">Is it a Ssl/Tls server?</param>
+        /// <param name="isSslType it a Ssl/Tls server?</param>
         /// <param name="senderDisplayName">Sender's name</param>
         /// <param name="senderEmailAddresss">Sender's email address</param>
         /// <param name="useHtml">Are we going to send this email as a html message or a plain text?</param>
         /// <param name="implictSsl">Indicate if the ssl is an implict ssl</param>
         /// <param name="messagePriority">Priority of message</param>
-        public MimeMailer(string host, int port = 465, string userName = null, string passWord ="", bool isSsl = false, bool implictSsl = false, MailPriority messagePriority = MailPriority.Normal, AuthenticationType authenticationType = AuthenticationType.PlainText):base(host,port)
+        public MimeMailer(string host, int port = 465, string userName = null, string passWord ="", SslMode sslType = SslMode.None, bool implictSsl = false, MailPriority messagePriority = MailPriority.Normal, AuthenticationType authenticationType = AuthenticationType.PlainText):base(host,port)
         {
             Host = host;
             Port = port;
             User = userName;
             Password = passWord;
-            EnableSsl = isSsl;
+            base.SslType = sslType;
             _implictSsl = implictSsl;
             _messagePriority = messagePriority;
             _authenticationType = authenticationType;
@@ -138,11 +172,10 @@ namespace AegisImplicitMail
         /// </summary>
         /// <param name="message">Email message that we want to send</param>
         /// <param name="onSendCallBack">The deligated function which will be called after sending message.</param>
-        public void Send(AbstractMailMessage message, SendCompletedEventHandler onSendCallBack)
+        public void Send(AbstractMailMessage message, SendCompletedEventHandler onSendCallBack = null)
         {
 
-            if (_implictSsl)
-            {
+                Console.Out.WriteLine("Implicit");
                 SendCompleted += onSendCallBack;
                 SendMailAsync(message);
                 // Connecting to the server and configuring it
@@ -150,31 +183,22 @@ namespace AegisImplicitMail
                 {
                     Host = Host;
                     Port = Port;
-                    EnableSsl = EnableSsl;
+                    base.SslType = base.SslType;
                     if (String.IsNullOrEmpty(User))
                         AuthenticationMode = AuthenticationType.UseDefualtCridentials;
                 }
-            }
-            else
-            {
-                using (var client = new SmtpClient())
-                {
-                 
-                    client.Host = Host;
-                    client.Port = Port;
-                    client.EnableSsl = EnableSsl;
-                    if (String.IsNullOrEmpty(User))
-                        client.UseDefaultCredentials =true;
-                    else
-                    {
-                        client.Credentials = new NetworkCredential(User,Password);
-                    }
-                    client.SendCompleted += onSendCallBack;
-                    client.SendMailAsync(message);
-                  
-                }
-                
-            }
+            
+
+        }
+
+        public void Send(string from, string recipiant, string subject, string body)
+        {
+            var mailMessage = new MimeMailMessage();
+            mailMessage.From = new MimeMailAddress(from);
+            mailMessage.To.Add(new MimeMailAddress(recipiant));
+            mailMessage.Subject = subject;
+            mailMessage.Body = body;
+            Send(mailMessage,null);
 
         }
     }

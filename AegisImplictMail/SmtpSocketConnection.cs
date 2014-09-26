@@ -70,6 +70,8 @@ namespace AegisImplicitMail
 
         EncryptionPolicy encryptionPolicy = EncryptionPolicy.AllowNoEncryption;
 	    private SslProtocols _sslProtocol = SslProtocols.Default;
+	
+	    private string _host;
 
 	    public SslProtocols SslProtocol
 	    {
@@ -84,16 +86,17 @@ namespace AegisImplicitMail
 	    /// <param name="port">Port to connect to.</param>
 	    /// <param name="isSsl">Enable SSL if it's an ssl</param>
 	    /// <exception cref="ArgumentException"></exception>
-	    internal void Open(string host, int port = 465, bool isSsl = true, int timeout =100000 )
+        internal void Open(string host, int port = 465, SslMode isSsl = SslMode.None, int timeout = 100000)
 		{
             if (string.IsNullOrWhiteSpace(host) || port <= 0)
             {
                 throw new ArgumentException("Invalid Argument found.");
             }
+	        _host = host;
             _socket.Connect(host, port);
 	        _socket.SendTimeout = timeout;
 	        _socket.ReceiveTimeout = timeout;
-	        if (isSsl)
+	        if (isSsl == SslMode.Ssl)
 	        {
 
 	            if (clientcerts == null)
@@ -107,13 +110,14 @@ namespace AegisImplicitMail
 	            }
 	            else
 	            {
-                    var sslStream = new SslStream(_socket.GetStream(),
-                   true, _validationCallback, ClientCertificateSelectionCallback, encryptionPolicy);
-                    sslStream.AuthenticateAsClient(host,clientcerts,_sslProtocol, CheckRevokation);
+	              var  sslStream = new SslStream(_socket.GetStream(),
+	                    true, _validationCallback, ClientCertificateSelectionCallback, encryptionPolicy);
+	                sslStream.AuthenticateAsClient(host, clientcerts, _sslProtocol, CheckRevokation);
                     _writer = new StreamWriter(sslStream, Encoding.ASCII);
                     _reader = new StreamReader(sslStream, Encoding.ASCII);
+                    
 	            }
-
+	            _connected = true;
 
 	        }
             else
@@ -133,8 +137,8 @@ namespace AegisImplicitMail
 		/// </summary>
 		internal void Close()
 		{
-			_reader.Close();
-			_writer.Flush();
+          _reader.Close();
+	      _writer.Flush();
 			_writer.Close();
 			_reader = null;
 			_writer = null;
@@ -152,6 +156,7 @@ namespace AegisImplicitMail
 			_writer.Flush();
 		}
 
+
 		/// <summary>
 		/// Send data to the server. Used for sending attachments.
 		/// </summary>
@@ -163,6 +168,8 @@ namespace AegisImplicitMail
 			_writer.Write(buf, start, length);
 		}
 
+
+
 		/// <summary>
 		/// Get the reply message from the server.
 		/// </summary>
@@ -170,32 +177,67 @@ namespace AegisImplicitMail
 		/// <param name="code">Status code from server.</param>
 		internal void GetReply(out string reply, out int code)
 		{
-		    try
-		    {
-		        String s;
-		        s = _reader.ReadLine();
-		        reply = s;
-		        while (s != null && s.Substring(3, 1).Equals("-"))
-		        {
-		            s = _reader.ReadLine();
-		            if (s != null)
-		            {
-		                reply += s + "\r\n";
-		            }
-		        }
-		        code = reply == null ? -1 : Int32.Parse(reply.Substring(0, 3));
-		    }
-		    catch (Exception err)
-		    {
-		        reply = "Error in reading response from server. " + err.Message;
-		        code = -1;
-		    }
+            GetReply(_reader,out reply,out code);
 		}
+
+
+        /// <summary>
+        /// Get the reply message from the server.
+        /// </summary>
+        /// <param name="reply">Text reply from server.</param>
+        /// <param name="code">Status code from server.</param>
+        private void GetReply(StreamReader reader, out string reply, out int code)
+        {
+            try
+            {
+                String s;
+                s = reader.ReadLine();
+                reply = s;
+                while (s != null && s.Substring(3, 1).Equals("-"))
+                {
+                    s = reader.ReadLine();
+                    if (s != null)
+                    {
+                        reply += s + "\r\n";
+                    }
+                }
+                code = reply == null ? -1 : Int32.Parse(reply.Substring(0, 3));
+            }
+            catch (Exception err)
+            {
+                reply = "Error in reading response from server. " + err.Message;
+                code = -1;
+            }
+        }
+
 
 	    public void Dispose()
 	    {
             _socket.Close();
             _socket = null;
+	    }
+
+	    internal void SwitchToSsl()
+	    {
+            if (clientcerts == null)
+            {
+
+                var sslStream = new SslStream(_socket.GetStream(),
+                    true, _validationCallback, ClientCertificateSelectionCallback, encryptionPolicy);
+                sslStream.AuthenticateAsClient(_host);
+                _writer = new StreamWriter(sslStream, Encoding.ASCII);
+                _reader = new StreamReader(sslStream, Encoding.ASCII);
+            }
+            else
+            {
+               var sslStream = new SslStream(_socket.GetStream(),
+                    true, _validationCallback, ClientCertificateSelectionCallback, encryptionPolicy);
+                sslStream.AuthenticateAsClient(_host, clientcerts, _sslProtocol, CheckRevokation);
+                _writer = new StreamWriter(sslStream, Encoding.ASCII);
+                _reader = new StreamReader(sslStream, Encoding.ASCII);
+
+            }
+	   
 	    }
 	}
 }
