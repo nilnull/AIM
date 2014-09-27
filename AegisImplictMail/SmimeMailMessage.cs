@@ -100,20 +100,15 @@ namespace AegisImplicitMail
         /// <summary>
         /// Gets or sets the address of the sender of the message.
         /// </summary>
-        public SmimeMailAddress Sender
-        {
-            get;
+        public new SmimeMailAddress Sender
+        { private get;
             set;
         }
 
         /// <summary>
         /// Gets a list the recipients of the e-mail message.
         /// </summary>
-        public SmimeMailAddressCollection To
-        {
-            get;
-            private set;
-        }
+        public new SmimeMailAddressCollection To { get; private set; }
 
         /// <summary>
         /// Determines whether the message is a multipart MIME message.
@@ -151,11 +146,11 @@ namespace AegisImplicitMail
         private SmimeMessageContent GetUnsignedContent()
         {
 
-            var bodyType = new ContentType();
-
-            bodyType.MediaType = IsBodyHtml ? "text/html" : "text/plain";
-
-            bodyType.CharSet = BodyEncoding.BodyName;
+            var bodyType = new ContentType
+            {
+                MediaType = IsBodyHtml ? "text/html" : "text/plain",
+                CharSet = BodyEncoding.BodyName
+            };
 
             TransferEncoding bodyTransferEncoding;
 
@@ -181,16 +176,15 @@ namespace AegisImplicitMail
             {
                 return bodyContent;
             }
-            var bodyWithAttachmentsType = new ContentType("multipart/mixed");
-            bodyWithAttachmentsType.Boundary = Helpers.GenerateBoundary();
+            var bodyWithAttachmentsType = new ContentType("multipart/mixed") {Boundary = Helpers.GenerateBoundary()};
 
-            StringBuilder message = new StringBuilder();
+            var message = new StringBuilder();
             message.Append("\r\n");
             message.Append("--");
             message.Append(bodyWithAttachmentsType.Boundary);
             message.Append("\r\n");
             message.Append("Content-Type: ");
-            message.Append(bodyContent.ContentType.ToString());
+            message.Append(bodyContent.ContentType);
             message.Append("\r\n");
             message.Append("Content-Transfer-Encoding: ");
             message.Append(TransferEncoder.GetTransferEncodingName(bodyContent.TransferEncoding));
@@ -204,7 +198,7 @@ namespace AegisImplicitMail
                 message.Append(bodyWithAttachmentsType.Boundary);
                 message.Append("\r\n");
                 message.Append("Content-Type: ");
-                message.Append(attachment.ContentType.ToString());
+                message.Append(attachment.ContentType);
                 message.Append("\r\n");
                 message.Append("Content-Transfer-Encoding: base64\r\n\r\n");
                 message.Append(TransferEncoder.ToBase64(Helpers.ReadAttachment(attachment)));
@@ -230,12 +224,14 @@ namespace AegisImplicitMail
                 throw new InvalidOperationException("Can't sign message unless the From property contains a signing certificate.");
             }
 
-            var signedContentType = new ContentType("multipart/signed; protocol=\"application/x-pkcs7-signature\"; micalg=SHA1; ");
-            signedContentType.Boundary = Helpers.GenerateBoundary();
+            var signedContentType = new ContentType("multipart/signed; protocol=\"application/x-pkcs7-signature\"; micalg=SHA1; ")
+            {
+                Boundary = Helpers.GenerateBoundary()
+            };
 
             var unsignedStringBuilder = new StringBuilder();
             unsignedStringBuilder.Append("Content-Type: ");
-            unsignedStringBuilder.Append(unsignedContent.ContentType.ToString());
+            unsignedStringBuilder.Append(unsignedContent.ContentType);
             unsignedStringBuilder.Append("\r\n");
             unsignedStringBuilder.Append("Content-Transfer-Encoding: ");
             unsignedStringBuilder.Append(TransferEncoder.GetTransferEncodingName(unsignedContent.TransferEncoding));
@@ -300,7 +296,7 @@ namespace AegisImplicitMail
 
             var fullUnencryptedMessageBuilder = new StringBuilder();
             fullUnencryptedMessageBuilder.Append("Content-Type: ");
-            fullUnencryptedMessageBuilder.Append(unencryptedContent.ContentType.ToString());
+            fullUnencryptedMessageBuilder.Append(unencryptedContent.ContentType);
             fullUnencryptedMessageBuilder.Append("\r\n");
             fullUnencryptedMessageBuilder.Append("Content-Transfer-Encoding: ");
             fullUnencryptedMessageBuilder.Append(TransferEncoder.GetTransferEncodingName(unencryptedContent.TransferEncoding));
@@ -351,10 +347,12 @@ namespace AegisImplicitMail
             {
                 result.Sender = Sender;
             }
-            //Depricated Property
-            if (ReplyTo != null)
+            if (ReplyToList.Count >0)
             {
-                result.ReplyTo = ReplyTo;
+                foreach (var variable in ReplyToList)
+                {
+                    result.ReplyToList.Add(variable);
+                }
             }
 
             foreach (SmimeMailAddress toAddress in To)
@@ -450,10 +448,14 @@ namespace AegisImplicitMail
                 returnValue.Sender = Sender;
             }
 
-            if (ReplyTo != null)
+            if (ReplyToList.Count > 0)
             {
-                returnValue.ReplyTo = ReplyTo;
+                foreach (var variable in ReplyToList)
+                {
+                    returnValue.ReplyToList.Add(variable);
+                }
             }
+
 
 
             foreach (SmimeMailAddress toAddress in To)

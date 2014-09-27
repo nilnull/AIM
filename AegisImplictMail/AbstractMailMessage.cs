@@ -34,7 +34,6 @@ namespace AegisImplicitMail
         }
 
         protected AbstractMailMessage()
-            : base()
         {
         }
 

@@ -26,13 +26,6 @@ namespace AegisImplicitMail
     {
         # region Constructors
 
-        /// <summary>
-        /// Initializes an empty instances of the SmimeMailAddressCollection class.
-        /// </summary>
-        public SmimeMailAddressCollection()
-        {
-        }
-
         # endregion
 
         # region Methods
@@ -43,12 +36,11 @@ namespace AegisImplicitMail
         /// <param name="addresses">The addresses to add to the collection.  Multiple e-mail addressses must be separated with a comma.</param>
         public void Add(string addresses)
         {
-            System.Net.Mail.MailAddressCollection parser = new System.Net.Mail.MailAddressCollection();
-            parser.Add(addresses);
+            var parser = new System.Net.Mail.MailAddressCollection {addresses};
 
             foreach (System.Net.Mail.MailAddress address in parser)
             {
-                this.Add(new SmimeMailAddress(address.Address));
+                Add(new SmimeMailAddress(address.Address));
             }
         }
 

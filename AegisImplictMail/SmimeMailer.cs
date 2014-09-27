@@ -15,7 +15,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net.Mail;
 using System.Security.Cryptography.X509Certificates;
 
 namespace AegisImplicitMail
@@ -34,7 +33,6 @@ namespace AegisImplicitMail
         private List<SmimeMailAddress> bcc;
 
 
-
         /// <summary>
         /// Initiate and construct a smime mailer object
         /// </summary>
@@ -46,11 +44,8 @@ namespace AegisImplicitMail
         /// <param name="senderDisplayName">Name of sender</param>
         /// <param name="signingCertificate2">Certificate that is user for signing, Note: You can set this with the same cert you use for encryption</param>
         /// <param name="encryptionCertificate2">Certificate that is used for Encryption of mail</param>
-        /// <param name="isSslType the mail server using ssl?</param>
-        /// <param name="useHtml">Send email body as html</param>
+        /// <param name="sslType">Defines type of Ssl that your server uses, if you want to send Implicit Ssl mail use ssl, if explicit it should be TLS</param>
         /// <param name="implictSsl">Use implicit ssl</param>
-        /// <param name="messagePriority">Mail priority</param>
-        /// <param name="onSendCallBack">Call when mail is sent</param>
         /// <param name="sign">Do you need to sign mail?</param>
         /// <param name="toSigningCerts"></param>
         /// <param name="toEncryptionCerts"></param>
@@ -59,10 +54,10 @@ namespace AegisImplicitMail
         public SmimeMailer(string host, int port, string userName, string passWord, string senderEmailAddresss,
             string senderDisplayName, X509Certificate2 signingCertificate2 = null,
             X509Certificate2 encryptionCertificate2 = null, SslMode sslType = SslMode.None, 
-            bool implictSsl = false, MailPriority messagePriority = MailPriority.Normal,
+            bool implictSsl = false, 
             bool sign = false,
             List<X509Certificate2> toSigningCerts = null, List<X509Certificate2> toEncryptionCerts = null,
-            AuthenticationType authenticationType = AuthenticationType.Base64, bool encrypt = true):base(host,port,userName,passWord,sslType,implictSsl,messagePriority,authenticationType)
+            AuthenticationType authenticationType = AuthenticationType.Base64, bool encrypt = true):base(host,port,userName,passWord,sslType,implictSsl,authenticationType)
         {
             if (encryptionCertificate2 == null || toEncryptionCerts == null)
                 throw new ArgumentNullException("encryptionCertificate2");
@@ -104,10 +99,10 @@ namespace AegisImplicitMail
                 message.To.Add((SmimeMailAddress) a));
             if (cc != null)
                 cc.ForEach(a =>
-                    message.CC.Add((SmimeMailAddress) a));
+                    message.CC.Add(a));
             if (bcc != null)
                 bcc.ForEach(a =>
-                    message.Bcc.Add((SmimeMailAddress) a));
+                    message.Bcc.Add(a));
 
             if (attachmentsList != null && attachmentsList.Count > 0)
                 attachmentsList.ForEach(a => message.Attachments.Add(new MimeAttachment(a)));

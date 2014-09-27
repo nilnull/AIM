@@ -83,46 +83,41 @@ namespace TestSslMail
             var bodyText = body.Text;
             var sendAsHtml = checkHTML.Checked;
 
-            var mailMessage = new SmimeMailMessage();
-            mailMessage.Subject = subjectText;
-            mailMessage.Body = bodyText;
-            mailMessage.Sender = _senderMail;
-            mailMessage.IsBodyHtml = sendAsHtml;
-            mailMessage.From = _senderMail;
+            var mailMessage = new SmimeMailMessage
+            {
+                Subject = subjectText,
+                Body = bodyText,
+                Sender = _senderMail,
+                IsBodyHtml = sendAsHtml,
+                From = _senderMail
+            };
             var emailer = new SmimeMailer(hostAddress, portNo)
             {
                 MailMessage = mailMessage,
                 SslType = SslMode.Tls
             };
 
-            for (int x = 0; x < ToList.Count; ++x)
+            foreach (IMailAddress t in ToList)
             {
-                emailer.MailMessage.To.Add((SmimeMailAddress)ToList[x]);
+                emailer.MailMessage.To.Add((SmimeMailAddress)t);
             }
-            for (int x = 0; x < CcList.Count; ++x)
+            foreach (IMailAddress t in CcList)
             {
-                emailer.MailMessage.CC.Add((SmimeMailAddress)CcList[x]);
+                emailer.MailMessage.CC.Add((SmimeMailAddress)t);
             }
-            for (int x = 0; x < BccList.Count; ++x)
+            foreach (IMailAddress t in BccList)
             {
-                emailer.MailMessage.Bcc.Add((SmimeMailAddress)BccList[x]);
+                emailer.MailMessage.Bcc.Add((SmimeMailAddress)t);
             }
-            for (int x = 0; x < AttachList.Count; ++x)
+            foreach (Attachment t in AttachList)
             {
-                emailer.MailMessage.Attachments.Add((MimeAttachment)AttachList[x]);
+                emailer.MailMessage.Attachments.Add((MimeAttachment)t);
             }
             if (!loginNone.Checked)
             {
                 emailer.User = userName.Text;
                 emailer.Password = password.Text;
-                if (loginBase64.Checked)
-                {
-                    emailer.AuthenticationMode = AuthenticationType.Base64;
-                }
-                else
-                {
-                    emailer.AuthenticationMode = AuthenticationType.PlainText;
-                }
+                emailer.AuthenticationMode = loginBase64.Checked ? AuthenticationType.Base64 : AuthenticationType.PlainText;
             }
             emailer.SendCompleted += SendCompleted;
             emailer.SendMailAsync(emailer.MailMessage);
@@ -136,20 +131,16 @@ namespace TestSslMail
 
         private void button3_Click(object sender, EventArgs e)
         {
-            OpenFileDialog dlg = new OpenFileDialog();
-            dlg.CheckFileExists = true;
-            dlg.CheckPathExists = true;
-            if (dlg.ShowDialog() == DialogResult.OK)
+            var dlg = new OpenFileDialog {CheckFileExists = true, CheckPathExists = true};
+            if (dlg.ShowDialog() != DialogResult.OK) return;
+            var a = new MimeAttachment(dlg.FileName);
+            var at = new AttachType();
+            at.ShowDialog(this);
+            if (at.DialogResult == DialogResult.OK)
             {
-                MimeAttachment a = new MimeAttachment(dlg.FileName);
-                AttachType at = new AttachType();
-                at.ShowDialog(this);
-                if (at.DialogResult == DialogResult.OK)
-                {
-                    a.ContentType = new ContentType(at.contentType.Text);
-                    a.Location = at.attachAttachment.Checked ? AttachmentLocation.Attachmed : AttachmentLocation.Inline;
-                    AttachList.Add(a);
-                }
+                a.ContentType = new ContentType(at.contentType.Text);
+                a.Location = at.attachAttachment.Checked ? AttachmentLocation.Attachmed : AttachmentLocation.Inline;
+                AttachList.Add(a);
             }
         }
 

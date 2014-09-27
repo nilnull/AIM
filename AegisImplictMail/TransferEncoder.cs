@@ -117,7 +117,7 @@ namespace AegisImplicitMail
         /// <returns>A string containing the conveted byte array.</returns>
         public static string ToQuotedPrintable(byte[] bytes, bool encodeNewlines)
         {
-            StringBuilder returnValue = new StringBuilder();
+            var returnValue = new StringBuilder();
 
             int currentColumn = 0;
 

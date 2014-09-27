@@ -39,15 +39,10 @@ namespace AegisImplicitMail
             {
                 if (_disposed)
                 {
-                    throw new ObjectDisposedException(this.GetType().FullName);
+                    throw new ObjectDisposedException(GetType().FullName);
                 }
 
-                if (_attachments == null)
-                {
-                   
-                    _attachments = new MimeAttachmentCollection();
-                }
-                return _attachments;
+                return _attachments ?? (_attachments = new MimeAttachmentCollection());
             }
         }
         #endregion
@@ -59,7 +54,7 @@ namespace AegisImplicitMail
             if (disposing && !_disposed)
             {
                 _disposed = true;
-                base.Dispose(disposing);
+                base.Dispose(true);
              
                 if (_attachments != null)
                 {

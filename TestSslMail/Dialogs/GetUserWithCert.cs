@@ -11,15 +11,8 @@
  * Aegis Implicit Mail is an implict ssl package to use mine/smime messages on implict ssl servers
  */
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace TestSslMail.Dialogs
@@ -100,18 +93,10 @@ namespace TestSslMail.Dialogs
                     }
                     catch (Exception err)
                     {
-                        if (
-                            MessageBox.Show(
-                                "We couldn't open you r public key" + err.Message +
-                                "\n Do you want to use your private key file as the public key as well?", "Warning",
-                                MessageBoxButtons.YesNo) == DialogResult.Yes)
-                        {
-                            PublicKey = PrivateKey;
-                        }
-                        else
-                        {
-                            PublicKey = null;
-                        }
+                        PublicKey = MessageBox.Show(
+                            "We couldn't open you r public key" + err.Message +
+                            "\n Do you want to use your private key file as the public key as well?", "Warning",
+                            MessageBoxButtons.YesNo) == DialogResult.Yes ? PrivateKey : null;
                     }
                 }
             }

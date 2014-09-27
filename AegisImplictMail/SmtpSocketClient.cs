@@ -19,7 +19,6 @@ using System.Text;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading;
-using AegisImplictMail;
 
 namespace AegisImplicitMail
 {
@@ -61,7 +60,7 @@ namespace AegisImplicitMail
         private string _password;
         private MimeMailMessage _mailMessage;
         private X509CertificateCollection ClientCertificates { get; set; }
-
+        private string _errormsg = "";
         private string _host;
         /// <summary>
         /// Name of server.
@@ -153,7 +152,7 @@ namespace AegisImplicitMail
         /// <param name="useHtml">Determine if mail message is html or not</param>
         /// <param name="msg">Message to send</param>
         /// <param name="onMailSend">This function will be called after mail is sent</param>
-        /// <param name="sslTypesl">Your connection is Ssl conection?</param>
+        /// <param name="sslType">The type of Ssl used in your Smtp Mail Server <see cref="SslMode"/> </param>
         /// <exception cref="ArgumentNullException">If username and pass is needed and not provided</exception>
         public SmtpSocketClient(string host, int port = 465, string username = null, string password = null, AuthenticationType authenticationMode = AuthenticationType.Base64, bool useHtml = true, MimeMailMessage msg = null, SendCompletedEventHandler onMailSend = null, SslMode sslType = SslMode.None)
             : this(msg)
@@ -189,6 +188,31 @@ namespace AegisImplicitMail
 #endregion
 
 
+        public SslMode DetectSslMode()
+        {
+            using (new MimeMailer(Host, Port, User, Password))
+            {
+                Timeout = 200000;
+                SslType = SslMode.Auto;
+                if (TestConnection())
+                {
+                    if (SupportsTls)
+                    {
+                        return SslMode.Tls;
+                    }
+                }
+                else
+                {
+                    SslType = SslMode.Ssl;
+                    if (TestConnection())
+                    {
+                        return SslMode.Ssl;
+                    }
+                }
+            }
+            return SslMode.None;
+        }
+
         public bool TestConnection()
         {
             lock (this)
@@ -219,7 +243,12 @@ namespace AegisImplicitMail
 
                 InCall = true;
                 //set up initial connection
-                return EsablishSmtp();
+                var result =  EsablishSmtp();
+                string response;
+                int code;
+                if (_con!=null)
+                QuiteConnection(out response, out code);
+                return result;
             }
         }
 
@@ -230,10 +259,14 @@ namespace AegisImplicitMail
             {
                 _con.clientcerts = ClientCertificates;
             }
-            if (_port <= 0) _port = 465;
+            if (_port <= 0)
+            {
+                _port = 465;
+                SslType = SslMode.Ssl;
+            }
             try
             {
-                _con.Open(_host, _port, SslType,Timeout);
+                _con.Open(_host, _port, SslType, Timeout);
             }
             catch (Exception err)
             {
@@ -250,35 +283,11 @@ namespace AegisImplicitMail
             int code;
             //read greeting
             _con.GetReply(out response, out code);
-       
+
+
             //Code 220 means that service is up and working
 
-            if (code != 220)
-            {
-                //There is something wrong
-                if (code == 421)
-                {
-                    if (SendCompleted != null)
-                    {
-                        SendCompleted(this,
-                            new AsyncCompletedEventArgs(
-                                new ServerException("Service not available, closing transmission channel"), true,
-                                response));
-                    }
-                }
-                else
-                {
-                    if (SendCompleted != null)
-                    {
-                        SendCompleted(this,
-                            new AsyncCompletedEventArgs(
-                                new ServerException("We couldn't connect to server, server is clossing"), true,
-                                response));
-                    }
-                }
-                QuiteConnection(out response, out code);
-                return false;
-            }
+            if (!ParseGreeting(code, response)) return false;
             var buf = new StringBuilder();
             if (_authMode == AuthenticationType.UseDefualtCridentials)
             {
@@ -286,20 +295,22 @@ namespace AegisImplicitMail
                 buf.Append(_host);
                 _con.SendCommand(buf.ToString());
                 _con.GetReply(out response, out code);
-                //todo : Check authentication Errors
+
+                //Handle Errors
+                if (!ParseHello(code, response)) return false;
             }
             else
             {
                 buf.Append(SmtpCommands.EHello);
                 buf.Append(_host);
                 _con.SendCommand(buf.ToString());
-                // Get available command in the EHello Answer
                 _con.GetReply(out response, out code);
 
-                string[] lines = response.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
+                //Handle Errors
+                if (!ParseEHello(code, response)) return false;
+  
+                var lines = response.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
                 ParseExtensions(lines);
-
-                Console.Out.WriteLine("Reply to EHLO: " + response + " Code :" + code);
 
                 if (SslType == SslMode.Tls || SslType == SslMode.Auto)
                 {
@@ -307,7 +318,7 @@ namespace AegisImplicitMail
                     {
                         _con.SendCommand(SmtpCommands.StartTls);
                         _con.GetReply(out response, out code);
-                        Console.Out.WriteLine("STARTTLS result : " + response);
+                        if (!ParseStartTls(code, response)) return false;
                         _con.SwitchToSsl();
                     }
                     else
@@ -323,7 +334,7 @@ namespace AegisImplicitMail
                    
                         if (!AuthenticateAsBase64(out response, out code))
                         {
-                            if (code == 501)
+                            if (code == (int)SmtpResponseCodes.SyntaxError)
                             {
                                 if (SendCompleted != null)
                                 {
@@ -332,7 +343,7 @@ namespace AegisImplicitMail
                                          new ServerException("Service Does not support Base64 Encoding. Please check authentification type"), true, response));
                                 }
                             }
-                            if (code == 535)
+                            if (code == (int)SmtpResponseCodes.AuthenticationFailed)
                             {
                                 if (SendCompleted != null)
                                 {
@@ -341,6 +352,16 @@ namespace AegisImplicitMail
                                             new ServerException("SMTP client authenticates but the username or password is incorrect"), true, response));
                                 }
                             }
+                             else if (code == (int)SmtpResponseCodes.Error)
+                            {
+                                if (SendCompleted != null)
+                                {
+                                    SendCompleted(this,
+                                        new AsyncCompletedEventArgs(
+                                            new ServerException("A general Error happened"), true, response));
+                                }
+                            }
+
                             else
                             {
                                 if (SendCompleted != null)
@@ -360,7 +381,7 @@ namespace AegisImplicitMail
 
                         if (!AuthenticateAsPlainText(out response, out code))
                         {
-                            if (code == 501)
+                            if (code == (int)SmtpResponseCodes.SyntaxError)
                             {
                                 if (SendCompleted != null)
                                 {
@@ -368,8 +389,9 @@ namespace AegisImplicitMail
                                         new AsyncCompletedEventArgs(
                                          new ServerException("Service Does not support plain text Encoding. Please check authentification type"), true, response));
                                 }
+                                return false;
                             }
-                            if (code == 535)
+                            if (code == (int)SmtpResponseCodes.AuthenticationFailed)
                             {
                                 if (SendCompleted != null)
                                 {
@@ -378,6 +400,16 @@ namespace AegisImplicitMail
                                             new ServerException("SMTP client authenticates but the username or password is incorrect"), true, response));
                                 }
                             }
+                            else if (code == (int)SmtpResponseCodes.Error)
+                            {
+                                if (SendCompleted != null)
+                                {
+                                    SendCompleted(this,
+                                        new AsyncCompletedEventArgs(
+                                            new ServerException("General Error Happened"), true, response));
+                                }
+                            }
+
                             else
                             {
                                 if (SendCompleted != null)
@@ -396,6 +428,254 @@ namespace AegisImplicitMail
     
             return true;
         }
+
+        #region Parsers
+
+        private bool ParseRcpt(int code, string response)
+        {
+            if (code == (int)SmtpResponseCodes.RequestCompleted) return true;
+            //There is something wrong
+
+            switch (code)
+            {
+                case (int)SmtpResponseCodes.ServiceNotAvailable:
+                    _errormsg = "Service not available, closing transmission channel";
+                    break;
+                case (int)SmtpResponseCodes.MailNotAccepted:
+                    _errormsg = "does not accept mail [rfc1846]";
+                    break;
+                case (int)SmtpResponseCodes.NotImplemented:
+                    _errormsg = "Requested action not taken: mailbox unavailable";
+                    break;
+                case (int)SmtpResponseCodes.BadSequence:
+                    _errormsg = "Bad sequence of commands";
+                    break;
+                case (int)SmtpResponseCodes.MailBoxUnavailable:
+                    _errormsg = "Requested mail action not taken: mailbox unavailable";
+                    break;
+                case (int)SmtpResponseCodes.MailBoxNameNotValid:
+                    _errormsg = "Requested action not taken: mailbox name not allowed";
+                    break;
+                case (int)SmtpResponseCodes.UserNotLocalBad:
+                    _errormsg = "User not local";
+                    break;
+                case (int)SmtpResponseCodes.ExceededStorage:
+                    _errormsg = "Requested mail action aborted: exceeded storage allocation";
+                    break;
+                case (int)SmtpResponseCodes.RequestAborted:
+                    _errormsg = "Requested action aborted: local error in processing";
+                    break;
+                case (int)SmtpResponseCodes.InsufficientStorage:
+                    _errormsg = "Requested action not taken: insufficient system storage";
+                    break;
+                case (int)SmtpResponseCodes.SyntaxError:
+                    _errormsg = "Syntax error in parameters or arguments";
+                    break;
+                case (int)SmtpResponseCodes.Error:
+                    _errormsg = "Syntax error, command unrecognised";
+                    break;
+            }
+
+            if (SendCompleted != null)
+            {
+                SendCompleted(this,
+                    new AsyncCompletedEventArgs(
+                        new ServerException(_errormsg), true,
+                        response));
+            }
+            QuiteConnection(out response, out code);
+            return false;
+
+        }
+
+
+        private bool ParseMail(int code, string response)
+        {
+            if (code == (int)SmtpResponseCodes.RequestCompleted) return true;
+            //There is something wrong
+
+            switch (code)
+            {
+                case (int)SmtpResponseCodes.ServiceNotAvailable:
+                    _errormsg = "Service not available, closing transmission channel";
+                    break;
+                case (int)SmtpResponseCodes.ExceededStorage:
+                    _errormsg = "Requested mail action aborted: exceeded storage allocation";
+                    break;
+                case (int)SmtpResponseCodes.RequestAborted:
+                    _errormsg = "Requested action aborted: local error in processing";
+                    break;
+                case (int)SmtpResponseCodes.InsufficientStorage:
+                    _errormsg = "Requested action not taken: insufficient system storage";
+                    break;
+                case (int)SmtpResponseCodes.SyntaxError:
+                    _errormsg = "Syntax error in parameters or arguments";
+                    break;
+                case (int)SmtpResponseCodes.Error:
+                    _errormsg = "Syntax error, command unrecognised";
+                    break;
+            }
+
+            if (SendCompleted != null)
+            {
+                SendCompleted(this,
+                    new AsyncCompletedEventArgs(
+                        new ServerException(_errormsg), true,
+                        response));
+            }
+            QuiteConnection(out response, out code);
+            return false;
+
+        }
+
+        private bool ParseStartTls(int code, string response)
+        {
+            if (code != (int) SmtpResponseCodes.Ready && code != (int) SmtpResponseCodes.RequestCompleted)
+            {
+                if (SendCompleted != null)
+                {
+                    SendCompleted(this, new AsyncCompletedEventArgs(new ServerException(response), true, response));
+                }
+                QuiteConnection(out response, out code);
+                return false;
+            }
+            return true;
+        }
+
+        private bool ParseEHello(int code, string response)
+        {
+            if (code == (int) SmtpResponseCodes.RequestCompleted) return true;
+            switch (code)
+            {
+                case (int) SmtpResponseCodes.ServiceNotAvailable:
+                    _errormsg = "Service not available, closing transmission channel";
+                    break;
+                case (int) SmtpResponseCodes.NotImplemented:
+                    _errormsg = "Not Implemented";
+                    break;
+                case (int) SmtpResponseCodes.CommandParameterNotImplemented:
+                    _errormsg = "Command parameter not implemented";
+                    break;
+                case (int) SmtpResponseCodes.SyntaxError:
+                    _errormsg = "Syntax error in parameters or arguments";
+                    break;
+                case (int) SmtpResponseCodes.Error:
+                    _errormsg = "Syntax error, command unrecognised";
+                    break;
+                default:
+                    _errormsg = response;
+                    break;
+            }
+            if (SendCompleted != null)
+            {
+                SendCompleted(this, new AsyncCompletedEventArgs(new ServerException(_errormsg), true, response));
+            }
+            QuiteConnection(out response, out code);
+            return false;
+        }
+
+        private bool ParseHello(int code, string response)
+        {
+            if (code == (int) SmtpResponseCodes.RequestCompleted) return true;
+            switch (code)
+            {
+                case (int) SmtpResponseCodes.ServiceNotAvailable:
+                    _errormsg = "Service not available, closing transmission channel";
+                    break;
+                case (int) SmtpResponseCodes.MailNotAccepted:
+                    _errormsg = "does not accept mail [rfc1846]";
+                    break;
+                case (int) SmtpResponseCodes.CommandParameterNotImplemented:
+                    _errormsg = "Command parameter not implemented";
+                    break;
+                case (int) SmtpResponseCodes.SyntaxError:
+                    _errormsg = "Syntax error in parameters or arguments";
+                    break;
+                case (int) SmtpResponseCodes.Error:
+                    _errormsg = "Syntax error, command unrecognised";
+                    break;
+                default:
+                    _errormsg = response;
+                    break;
+            }
+            if (SendCompleted != null)
+            {
+                SendCompleted(this, new AsyncCompletedEventArgs(new ServerException(_errormsg), true, response));
+            }
+            QuiteConnection(out response, out code);
+            return false;
+        }
+
+        private bool ParseGreeting(int code, string response)
+        {
+            if (code == (int) SmtpResponseCodes.Ready) return true;
+            //There is something wrong
+            switch (code)
+            {
+                case (int) SmtpResponseCodes.ServiceNotAvailable:
+                    _errormsg = "Service not available, closing transmission channel";
+                    break;
+                default:
+                    _errormsg = "We couldn't connect to server, server is clossing";
+                    break;
+            }
+            if (SendCompleted != null)
+            {
+                SendCompleted(this,
+                    new AsyncCompletedEventArgs(
+                        new ServerException(_errormsg), true,
+                        response));
+            }
+            QuiteConnection(out response, out code);
+            return false;
+        }
+
+        private bool ParseData(int code, string response)
+        {
+            if (code == (int)SmtpResponseCodes.StartInput || code == (int)SmtpResponseCodes.RequestCompleted) return true;
+            switch (code)
+            {
+                case (int)SmtpResponseCodes.RequestAborted:
+                    _errormsg = "Requested action aborted: local error in processing";
+                    break;
+                case (int)SmtpResponseCodes.TransactionFailed:
+                    _errormsg = "Transaction failed";
+                    break;
+                case (int)SmtpResponseCodes.SyntaxError:
+                    _errormsg = "Syntax error, command unrecognised";
+                    break;
+                case (int)SmtpResponseCodes.Error:
+                    _errormsg = "Syntax error in parameters or arguments";
+                    break;
+                case (int)SmtpResponseCodes.BadSequence:
+                    _errormsg = "Bad sequence of commands";
+                    break;
+                case (int)SmtpResponseCodes.ServiceNotAvailable:
+                    _errormsg = "Service not available, closing transmission channel received data";
+                    break;
+
+                case (int)SmtpResponseCodes.ExceededStorage:
+                    _errormsg = "Requested mail action aborted: exceeded storage allocation";
+                    break;
+                case (int)SmtpResponseCodes.InsufficientStorage:
+                    _errormsg = "Requested action aborted: Insufficiant System Storage";
+                    break;
+                default:
+                    _errormsg = "We couldn't connect to server, server is clossing";
+                    break;
+            }
+            if (SendCompleted != null)
+            {
+                SendCompleted(this,
+                    new AsyncCompletedEventArgs(
+                        new ServerException(_errormsg), true,
+                        response));
+            }
+            QuiteConnection(out response, out code);
+            return false;
+        }
+
+#endregion
 
         #region MessageSenders
 
@@ -446,8 +726,7 @@ namespace AegisImplicitMail
                 {
                     string response;
                     int code;
-                    var buf = new StringBuilder();
-                    buf.Length = 0;
+                    var buf = new StringBuilder {Length = 0};
                     buf.Append(SmtpCommands.Mail);
                     buf.Append("<");
                     buf.Append(MailMessage.From);
@@ -456,6 +735,10 @@ namespace AegisImplicitMail
                    
                     _con.SendCommand(buf.ToString());
                     _con.GetReply(out response, out code);
+                    if (!ParseMail(code, response)) return;
+                 
+                    Console.Out.WriteLine("From Response :" + response);
+
                     buf.Length = 0;
                     //set up list of to addresses
                     foreach (MailAddress recipient in MailMessage.To)
@@ -467,6 +750,7 @@ namespace AegisImplicitMail
                         buf.Append(">");
                         _con.SendCommand(buf.ToString());
                         _con.GetReply(out response, out code);
+                        if (!ParseRcpt(code, response)) return;
                         buf.Length = 0;
                     }
                     //set up list of cc addresses
@@ -479,6 +763,8 @@ namespace AegisImplicitMail
                         buf.Append(">");
                         _con.SendCommand(buf.ToString());
                         _con.GetReply(out response, out code);
+                        if (!ParseRcpt(code, response)) return;
+
                         buf.Length = 0;
                     }
                     //set up list of bcc addresses
@@ -491,11 +777,15 @@ namespace AegisImplicitMail
                         buf.Append(">");
                         _con.SendCommand(buf.ToString());
                         _con.GetReply(out response, out code);
+                        if (!ParseRcpt(code, response)) return;
+
                         buf.Length = 0;
                     }
                     buf.Length = 0;
                     //set headers
                     _con.SendCommand(SmtpCommands.Data);
+                    _con.GetReply(out response,out code);
+                    if (!ParseData(code, response)) return;
                     _con.SendCommand("X-Mailer: AIM.MimeMailer");
                     DateTime today = DateTime.Now;
                     buf.Append(SmtpCommands.Date);
@@ -610,8 +900,8 @@ namespace AegisImplicitMail
 
                     _con.SendCommand(".");
                     _con.GetReply(out response, out code);
+                    Console.Out.WriteLine("Sent Response :" + response);
 
-                    var replymessage = response;
 
                     _con.SendCommand(SmtpCommands.Quit);
                     _con.GetReply(out response, out code);
@@ -627,13 +917,14 @@ namespace AegisImplicitMail
             }
         }
 
+
         public bool InCall { get; private set; }
 
         private bool AuthenticateAsPlainText(out string response, out int code)
         {
             _con.SendCommand(SmtpCommands.Auth + SmtpCommands.AuthLogin + Gap + SmtpCommands.AuthPlian);
             _con.GetReply(out response, out code);
-            if (code == 501)
+            if (code == (int)SmtpResponseCodes.SyntaxError)
                 return false;
 
             _con.SendCommand(_user);
@@ -643,7 +934,7 @@ namespace AegisImplicitMail
             _con.SendCommand(_password);
             _con.GetReply(out response, out code);
             Console.Out.WriteLine("Reply to Plain 3: " + response + " Code :" + code);
-            if (code == 235)
+            if (code == (int)SmtpResponseCodes.AuthenticationSuccessfull)
                 return true;
             return false;
         
@@ -653,7 +944,7 @@ namespace AegisImplicitMail
         {
             _con.SendCommand(SmtpCommands.Auth + SmtpCommands.AuthLogin);
             _con.GetReply(out response, out code);
-            if (code == 501)
+            if (code == (int)SmtpResponseCodes.SyntaxError)
             {
                 return false;
             }
@@ -667,24 +958,26 @@ namespace AegisImplicitMail
             _con.GetReply(out response, out code);
             Console.Out.WriteLine("Reply to b64 3: " + response + " Code :" + code);
 
-            if (code == 235)
+            if (code == (int)SmtpResponseCodes.AuthenticationSuccessfull)
                 return true;
             return false;
         }
 
-        private void ParseResponse(string response, int code)
-        {
-            
-        }
+
 
         private void QuiteConnection(out string response, out int code)
         {
-            _con.SendCommand(SmtpCommands.Quit);
-            _con.GetReply(out response, out code);
-            Console.WriteLine(response);
-            _con.Close();
-            InCall = false;
-            _con = null;
+            try
+            {
+                _con.SendCommand(SmtpCommands.Quit);
+                _con.GetReply(out response, out code);
+                _con.Close();
+            }
+            finally
+            {
+                InCall = false;
+                _con = null;
+            }
         }
 
         /// <summary>
@@ -693,7 +986,7 @@ namespace AegisImplicitMail
 		public void SendMailAsync(AbstractMailMessage message = null)
 		{
 		    if (message == null)
-		        message = this.MailMessage;
+		        message = MailMessage;
 			new Thread(()=> SendMail(message)).Start();
 		}
 
@@ -813,13 +1106,15 @@ namespace AegisImplicitMail
 
         public void Dispose()   
         {
-            if (_con.Connected)
+            if (_con!=null&& _con.Connected)
             {
                 _con.Close();
             }
+            if (_mailMessage!=null)
             _mailMessage.Dispose();
         }
 
+        [Flags]
         internal enum SupportedAuth
         {
             None = 0,
@@ -845,8 +1140,8 @@ namespace AegisImplicitMail
                 {
                     // remove the AUTH text including the following character 
                     // to ensure that split only gets the modules supported
-                    string[] authTypes =
-                        realextension.Remove(0, sizeOfAuthExtension).Split(new char[] { ' ', '=' },
+                    var authTypes =
+                        realextension.Remove(0, sizeOfAuthExtension).Split(new[] { ' ', '=' },
                         StringSplitOptions.RemoveEmptyEntries);
                     foreach (string authType in authTypes)
                     {

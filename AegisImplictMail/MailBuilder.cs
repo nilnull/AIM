@@ -15,8 +15,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Net;
 using System.Net.Mail;
 using System.Security.Cryptography.X509Certificates;
 
@@ -30,7 +28,7 @@ namespace AegisImplicitMail
         private readonly MailPriority _messagePriority;
         private readonly AuthenticationType _authenticationType;
 
-        public MailBuilder(string host, int port, string userName, string passWord, string senderEmailAddresss, string senderDisplayName, SslMode ssl = SslMode.None, bool useHtml = true, bool implictSsl = false, bool smime = false, MailPriority messagePriority = MailPriority.Normal, SendCompletedEventHandler onSendCallBack = null, bool encrypt =false, bool sign = false , AuthenticationType authenticationType  = AuthenticationType.PlainText)
+        public MailBuilder(string host, int port, string userName, string passWord, string senderEmailAddresss, string senderDisplayName, SslMode ssl = SslMode.None, bool useHtml = true, bool smime = false, MailPriority messagePriority = MailPriority.Normal, SendCompletedEventHandler onSendCallBack = null, bool encrypt =false, bool sign = false , AuthenticationType authenticationType  = AuthenticationType.PlainText)
         {
             _passWord = passWord;
             _ssl = ssl;
@@ -40,7 +38,7 @@ namespace AegisImplicitMail
             _useHtml = useHtml;
             _senderDisplayName = senderDisplayName;
             _senderEmailAddresss = senderEmailAddresss;
-            _implictSsl = implictSsl;
+            _implictSsl = ssl;
             _smime = smime;
             _onSendCallBack = onSendCallBack;
             _encrypt = encrypt;
@@ -49,19 +47,14 @@ namespace AegisImplicitMail
             _authenticationType = authenticationType;
         }
 
+        public bool Smime
+        {
+            get { return _smime; }
+        }
+
         public void SendMail()
         {
             
-        }
-
-
-
-        public  bool MailSent = false;
-        private static AsyncCompletedEventArgs SendCompletedCallback(object sender, AsyncCompletedEventArgs e)
-        {
-            // Get the unique identifier for this asynchronous operation.
-            String token = (string)e.UserState;
-            return e;
         }
 
         public void SendSecureMail(List<SmimeMailAddress> recieverMailAddresses, string messageSubject, string messageBody, X509Certificate2 signingCertificate2, List<string> attachmentAddress = null, X509Certificate2 encryptionCertificate2 = null)
@@ -69,7 +62,7 @@ namespace AegisImplicitMail
             if (signingCertificate2 == null)
                 throw new ArgumentNullException("signingCertificate2");
 
-            SmimeMailMessage message = new SmimeMailMessage();
+            var message = new SmimeMailMessage();
 
             // Look up your signing cert by serial number in your cert store
 
@@ -105,11 +98,13 @@ namespace AegisImplicitMail
 
         public void SendImplicitMail(List<MailAddress> recieverMailAddresses, MailPriority messagePriority, string messageSubject, string messageBody, List<string> attachmentAddress = null, List<MailAddress> ccMailAddresses = null, List<MailAddress> bccMailAddresses = null)
         {
-            var msg = new MimeMailMessage();
-            msg.From = new MailAddress(_senderEmailAddresss,_senderDisplayName);
-            msg.Subject = messageSubject;
-            msg.Body = messageBody;
-            msg.IsBodyHtml = _useHtml;
+            var msg = new MimeMailMessage
+            {
+                From = new MailAddress(_senderEmailAddresss, _senderDisplayName),
+                Subject = messageSubject,
+                Body = messageBody,
+                IsBodyHtml = _useHtml
+            };
             recieverMailAddresses.ForEach(a => msg.To.Add(a));
             if (ccMailAddresses != null) ccMailAddresses.ForEach(a => msg.To.Add(a));
             if (bccMailAddresses != null) bccMailAddresses.ForEach(a => msg.To.Add(a));
@@ -117,7 +112,7 @@ namespace AegisImplicitMail
             if (attachmentAddress != null)
                 attachmentAddress.ForEach(a=> msg.Attachments.Add(new MimeAttachment(a)));
     
-            var mm = new MimeMailer(_host,_port,_userName,_passWord,_ssl,true,_messagePriority,_authenticationType);
+            var mm = new MimeMailer(_host,_port,_userName,_passWord,_ssl,true,_authenticationType);
              mm.Send(msg,_onSendCallBack);
 
    
@@ -125,9 +120,7 @@ namespace AegisImplicitMail
 
         public void SendMail(List<MailAddress> recieverMailAddresses, MailPriority messagePriority, string messageSubject, string messageBody, List<string> attachmentAddress = null, SendCompletedEventHandler onSendCallBack = null, List<MailAddress> ccMailAddresses = null, List<MailAddress> bccMailAddresses = null)
         {
-            // C# Code
-            MailSent = false;
-            MimeMailMessage msg = new MimeMailMessage();
+            var msg = new MimeMailMessage {From = new MimeMailAddress(_senderEmailAddresss, _senderDisplayName)};
 
             // Your mail address and display name.
             // This what will appear on the From field.
@@ -135,7 +128,6 @@ namespace AegisImplicitMail
             // the SMTP server, the mail message would be
             // sent from the mail specified in the From
             // field on behalf of the real sender.
-            msg.From = new MimeMailAddress(_senderEmailAddresss, _senderDisplayName);
 
             // To addresses
 
@@ -194,16 +186,15 @@ namespace AegisImplicitMail
                     client.Password = _passWord;
                     // Provide your credentials
                     client.User = _userName;
-                SmtpClient sc = new SmtpClient();
                 }
-            
+
+                client.SslType = _implictSsl;
                 // Use SendAsync to send the message asynchronously
                 //    client.Send(msg);
                 client.SendCompleted += onSendCallBack;
                 // The userState can be any object that allows your callback  
                 // method to identify this send operation. 
                 // For this example, the userToken is a string constant. 
-                const string userState = "test message1";
                 client.SendMailAsync(msg);
             }
         }
@@ -217,11 +208,10 @@ namespace AegisImplicitMail
         private readonly string _userName;
 
         private readonly string _host;
-        private readonly bool _implictSsl;
         private readonly bool _smime;
-        private SendCompletedEventHandler _onSendCallBack = null;
-        private bool _base64Authentication;
+        private readonly SendCompletedEventHandler _onSendCallBack;
         private readonly bool _encrypt;
         private readonly bool _sign;
+        private readonly SslMode _implictSsl;
     }
 }

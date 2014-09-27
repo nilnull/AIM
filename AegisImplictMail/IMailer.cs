@@ -26,6 +26,7 @@ namespace AegisImplicitMail
         /// <summary>
         /// Generate an email 
         /// </summary>
+        /// <param name="sender">From Field of mail</param>
         /// <param name="toAddresses">Reciever address</param>
         /// <param name="ccAddresses">CC addresss</param>
         /// <param name="bccAddresses">Bcc Address</param>

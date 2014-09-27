@@ -8,7 +8,7 @@ namespace AegisImplicitMail
     {
         # region Constructors
 
-        public SmimeMessageContent(byte[] body, ContentType contentType, System.Net.Mime.TransferEncoding transferEncoding, bool encodeBody)
+        public SmimeMessageContent(byte[] body, ContentType contentType, TransferEncoding transferEncoding, bool encodeBody)
         {
             if (encodeBody)
             {

@@ -53,7 +53,7 @@ namespace AegisImplicitMail
 		}
 
 	    readonly RemoteCertificateValidationCallback _validationCallback =
-  new RemoteCertificateValidationCallback(ServerValidationCallback);
+  ServerValidationCallback;
 
         private static bool ServerValidationCallback(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslpolicyerrors)
         {
@@ -68,7 +68,7 @@ namespace AegisImplicitMail
             return ClientCertificate2;
         }
 
-        EncryptionPolicy encryptionPolicy = EncryptionPolicy.AllowNoEncryption;
+	    private const EncryptionPolicy EncryptionPolicy = System.Net.Security.EncryptionPolicy.AllowNoEncryption;
 	    private SslProtocols _sslProtocol = SslProtocols.Default;
 	
 	    private string _host;
@@ -85,8 +85,9 @@ namespace AegisImplicitMail
 	    /// <param name="host">Host name to connect to.</param>
 	    /// <param name="port">Port to connect to.</param>
 	    /// <param name="isSsl">Enable SSL if it's an ssl</param>
+	    /// <param name="timeout">Determins the time that you allow your application to do transaction, default is 100000</param>
 	    /// <exception cref="ArgumentException"></exception>
-        internal void Open(string host, int port = 465, SslMode isSsl = SslMode.None, int timeout = 100000)
+	    internal void Open(string host, int port = 465, SslMode isSsl = SslMode.None, int timeout = 100000)
 		{
             if (string.IsNullOrWhiteSpace(host) || port <= 0)
             {
@@ -103,7 +104,7 @@ namespace AegisImplicitMail
 	            {
 
 	                var sslStream = new SslStream(_socket.GetStream(),
-	                    true, _validationCallback, ClientCertificateSelectionCallback, encryptionPolicy);
+	                    true, _validationCallback, ClientCertificateSelectionCallback, EncryptionPolicy);
 	                sslStream.AuthenticateAsClient(host);
 	                _writer = new StreamWriter(sslStream, Encoding.ASCII);
 	                _reader = new StreamReader(sslStream, Encoding.ASCII);
@@ -111,7 +112,7 @@ namespace AegisImplicitMail
 	            else
 	            {
 	              var  sslStream = new SslStream(_socket.GetStream(),
-	                    true, _validationCallback, ClientCertificateSelectionCallback, encryptionPolicy);
+	                    true, _validationCallback, ClientCertificateSelectionCallback, EncryptionPolicy);
 	                sslStream.AuthenticateAsClient(host, clientcerts, _sslProtocol, CheckRevokation);
                     _writer = new StreamWriter(sslStream, Encoding.ASCII);
                     _reader = new StreamReader(sslStream, Encoding.ASCII);
@@ -181,17 +182,17 @@ namespace AegisImplicitMail
 		}
 
 
-        /// <summary>
-        /// Get the reply message from the server.
-        /// </summary>
-        /// <param name="reply">Text reply from server.</param>
-        /// <param name="code">Status code from server.</param>
-        private void GetReply(StreamReader reader, out string reply, out int code)
+	    /// <summary>
+	    /// Get the reply message from the server.
+	    /// </summary>
+	    /// <param name="reader">the reader which we are going to read</param>
+	    /// <param name="reply">Text reply from server.</param>
+	    /// <param name="code">Status code from server.</param>
+	    private void GetReply(StreamReader reader, out string reply, out int code)
         {
             try
             {
-                String s;
-                s = reader.ReadLine();
+                var s = reader.ReadLine();
                 reply = s;
                 while (s != null && s.Substring(3, 1).Equals("-"))
                 {
@@ -223,7 +224,7 @@ namespace AegisImplicitMail
             {
 
                 var sslStream = new SslStream(_socket.GetStream(),
-                    true, _validationCallback, ClientCertificateSelectionCallback, encryptionPolicy);
+                    true, _validationCallback, ClientCertificateSelectionCallback, EncryptionPolicy);
                 sslStream.AuthenticateAsClient(_host);
                 _writer = new StreamWriter(sslStream, Encoding.ASCII);
                 _reader = new StreamReader(sslStream, Encoding.ASCII);
@@ -231,7 +232,7 @@ namespace AegisImplicitMail
             else
             {
                var sslStream = new SslStream(_socket.GetStream(),
-                    true, _validationCallback, ClientCertificateSelectionCallback, encryptionPolicy);
+                    true, _validationCallback, ClientCertificateSelectionCallback, EncryptionPolicy);
                 sslStream.AuthenticateAsClient(_host, clientcerts, _sslProtocol, CheckRevokation);
                 _writer = new StreamWriter(sslStream, Encoding.ASCII);
                 _reader = new StreamReader(sslStream, Encoding.ASCII);

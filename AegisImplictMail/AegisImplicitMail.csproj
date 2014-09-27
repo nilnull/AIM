@@ -7,8 +7,8 @@
     <ProjectGuid>{6F330076-6C00-4A93-8571-2AB5477FFE3F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AegisImplictMail</RootNamespace>
-    <AssemblyName>AegisImplictMail</AssemblyName>
+    <RootNamespace>AegisImplicitMail</RootNamespace>
+    <AssemblyName>AegisImplicitMail</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

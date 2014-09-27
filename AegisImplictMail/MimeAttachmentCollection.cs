@@ -1,16 +1,18 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.ObjectModel;
 
-
+#endregion
 
 namespace AegisImplicitMail
 {
     /// <summary>
-    /// A collection of SmtpAttachments
+    ///     A collection of SmtpAttachments
     /// </summary>
     public class MimeAttachmentCollection : Collection<MimeAttachment>, IDisposable
     {
-        private bool disposed = false;
+        private bool disposed;
 
         internal MimeAttachmentCollection()
         {
@@ -22,7 +24,7 @@ namespace AegisImplicitMail
             {
                 return;
             }
-            foreach (MimeAttachment attachment in this)
+            foreach (var attachment in this)
             {
                 attachment.Dispose();
             }
@@ -34,7 +36,7 @@ namespace AegisImplicitMail
         {
             if (disposed)
             {
-                throw new ObjectDisposedException(this.GetType().FullName);
+                throw new ObjectDisposedException(GetType().FullName);
             }
 
             base.RemoveItem(index);
@@ -44,7 +46,7 @@ namespace AegisImplicitMail
         {
             if (disposed)
             {
-                throw new ObjectDisposedException(this.GetType().FullName);
+                throw new ObjectDisposedException(GetType().FullName);
             }
 
             base.ClearItems();
@@ -54,7 +56,7 @@ namespace AegisImplicitMail
         {
             if (disposed)
             {
-                throw new ObjectDisposedException(this.GetType().FullName);
+                throw new ObjectDisposedException(GetType().FullName);
             }
 
             if (item == null)
@@ -69,7 +71,7 @@ namespace AegisImplicitMail
         {
             if (disposed)
             {
-                throw new ObjectDisposedException(this.GetType().FullName);
+                throw new ObjectDisposedException(GetType().FullName);
             }
 
             if (item == null)
@@ -80,5 +82,4 @@ namespace AegisImplicitMail
             base.InsertItem(index, item);
         }
     }
-
 }

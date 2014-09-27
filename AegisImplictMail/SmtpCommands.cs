@@ -10,9 +10,8 @@
  * If you need any more details please contact <a.farhang.d@gmail.com>
  * Aegis Implict Ssl Mailer is an implict ssl package to use mine/smime messages on implict ssl servers
  */
-using System.Text;
 
-namespace AegisImplictMail
+namespace AegisImplicitMail
 {
 
         internal static class SmtpCommands

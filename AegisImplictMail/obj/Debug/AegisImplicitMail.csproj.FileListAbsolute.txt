@@ -1,6 +1,6 @@
 D:\AEGIS\AegisImplicitMail\AegisImplictMail\obj\Debug\AegisImplicitMail.csprojResolveAssemblyReference.cache
-D:\AEGIS\AegisImplicitMail\AegisImplictMail\bin\Debug\AegisImplictMail.dll
-D:\AEGIS\AegisImplicitMail\AegisImplictMail\bin\Debug\AegisImplictMail.pdb
-D:\AEGIS\AegisImplicitMail\AegisImplictMail\bin\Debug\AegisImplictMail.tlb
-D:\AEGIS\AegisImplicitMail\AegisImplictMail\obj\Debug\AegisImplictMail.dll
-D:\AEGIS\AegisImplicitMail\AegisImplictMail\obj\Debug\AegisImplictMail.pdb
+D:\AEGIS\AegisImplicitMail\AegisImplictMail\bin\Debug\AegisImplicitMail.dll
+D:\AEGIS\AegisImplicitMail\AegisImplictMail\bin\Debug\AegisImplicitMail.pdb
+D:\AEGIS\AegisImplicitMail\AegisImplictMail\bin\Debug\AegisImplicitMail.tlb
+D:\AEGIS\AegisImplicitMail\AegisImplictMail\obj\Debug\AegisImplicitMail.dll
+D:\AEGIS\AegisImplicitMail\AegisImplictMail\obj\Debug\AegisImplicitMail.pdb

@@ -20,19 +20,19 @@ namespace TestEmailer
 	/// <summary>
 	/// Summary description for AttachType.
 	/// </summary>
-	public class AttachType : System.Windows.Forms.Form
+	public class AttachType : Form
 	{
-		private System.Windows.Forms.GroupBox groupBox1;
-	    public System.Windows.Forms.RadioButton attachAttachment;
-		internal System.Windows.Forms.RadioButton attachInline;
-	    public System.Windows.Forms.TextBox contentType;
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.Button button1;
-		private System.Windows.Forms.Button button2;
+		private GroupBox groupBox1;
+	    public RadioButton attachAttachment;
+		internal RadioButton attachInline;
+	    public TextBox contentType;
+		private Label label1;
+		private Button button1;
+		private Button button2;
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.Container components = null;
+		private readonly System.ComponentModel.Container _components = null;
 
 		public AttachType()
 		{
@@ -46,9 +46,9 @@ namespace TestEmailer
 		{
 			if( disposing )
 			{
-				if(components != null)
+				if(_components != null)
 				{
-					components.Dispose();
+					_components.Dispose();
 				}
 			}
 			base.Dispose( disposing );
@@ -61,19 +61,19 @@ namespace TestEmailer
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.groupBox1 = new System.Windows.Forms.GroupBox();
-			this.attachInline = new System.Windows.Forms.RadioButton();
-			this.attachAttachment = new System.Windows.Forms.RadioButton();
-			this.contentType = new System.Windows.Forms.TextBox();
-			this.label1 = new System.Windows.Forms.Label();
-			this.button1 = new System.Windows.Forms.Button();
-			this.button2 = new System.Windows.Forms.Button();
+			this.groupBox1 = new GroupBox();
+			this.attachInline = new RadioButton();
+			this.attachAttachment = new RadioButton();
+			this.contentType = new TextBox();
+			this.label1 = new Label();
+			this.button1 = new Button();
+			this.button2 = new Button();
 			this.groupBox1.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// groupBox1
 			// 
-			this.groupBox1.Controls.AddRange(new System.Windows.Forms.Control[] {
+			this.groupBox1.Controls.AddRange(new Control[] {
 																																						this.attachInline,
 																																						this.attachAttachment});
 			this.groupBox1.Location = new System.Drawing.Point(8, 40);
@@ -136,16 +136,16 @@ namespace TestEmailer
 			// 
 			this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
 			this.ClientSize = new System.Drawing.Size(298, 205);
-			this.Controls.AddRange(new System.Windows.Forms.Control[] {
+			this.Controls.AddRange(new Control[] {
 																																	this.button2,
 																																	this.button1,
 																																	this.label1,
 																																	this.contentType,
 																																	this.groupBox1});
-			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+			this.FormBorderStyle = FormBorderStyle.FixedSingle;
 			this.MaximizeBox = false;
 			this.Name = "AttachType";
-			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+			this.StartPosition = FormStartPosition.CenterParent;
 			this.Text = "AttachType";
 			this.groupBox1.ResumeLayout(false);
 			this.ResumeLayout(false);

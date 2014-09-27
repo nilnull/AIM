@@ -10,6 +10,7 @@
  * If you need any more details please contact <a.farhang.d@gmail.com>
  * Aegis Implicit Mail is an implict ssl package to use mine/smime messages on implict ssl servers
  */
+
 using System;
 using System.ComponentModel;
 using System.Windows.Forms;
@@ -19,12 +20,11 @@ namespace TestSslMail
 {
     public partial class MainForm : Form
     {
-
-        string host = "smtp.gmail.com";
-        string user = "yourmail@gmail.com";
-        string pass = "password#";
-        string mail = "yourmail@gmail.com";
-        private int tlsPort = 587;
+        private const string Host = "smtp.gmail.com";
+        private const string User = "you@gmail.com";
+        private const string Pass = "password";
+        private const string Mail = "you@gmail.com";
+        private const int TlsPort = 587;
 
 
         public MainForm()
@@ -44,68 +44,106 @@ namespace TestSslMail
 
         private void button3_Click(object sender, EventArgs e)
         {
-            var mymessage = new MimeMailMessage();
-            mymessage.From = new MimeMailAddress(mail);
-            mymessage.To.Add(mail);
-            mymessage.Subject = "test";
-            mymessage.Body = "body";
-            var mailer = new MimeMailer(host, 465);
-               mailer.User= user;
-            mailer.Password = pass;
+            var mymessage = new MimeMailMessage
+            {
+                From = new MimeMailAddress(Mail),
+                Subject = "testImplicit",
+                Body = "body"
+            };
+            mymessage.To.Add(Mail);
+            var mailer = new MimeMailer(Host, 465)
+            {
+                User = User,
+                Password = Pass,
+                EnableImplicitSsl = true,
+                AuthenticationMode = AuthenticationType.Base64
+            };
             ((SmtpSocketClient) mailer).SslType = SslMode.Ssl;
-            mailer.EnableImplicitSsl = true;
-            mailer.AuthenticationMode = AuthenticationType.Base64;
+
             mailer.SendCompleted += compEvent;
             mailer.SendMailAsync(mymessage);
         }
 
         private void compEvent(object sender, AsyncCompletedEventArgs e)
         {
-            if (e.UserState!=null)
+            if (e.UserState != null)
                 Console.Out.WriteLine(e.UserState.ToString());
-            Console.Out.WriteLine("is it canceled? " + e.Cancelled);
-
             if (e.Error != null)
-                Console.Out.WriteLine("Error : " + e.Error.Message);
-
+            {
+                MessageBox.Show(e.Error.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else if (!e.Cancelled)
+            {
+                MessageBox.Show("Send successfull!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
         private void button4_Click(object sender, EventArgs e)
         {
-            
-            var mailer = new MimeMailer(host, 465, user, pass);
-            mailer.Timeout = 200;
+            var mailer = new MimeMailer(Host, TlsPort, User, Pass)
+            {
+                Timeout = 200000,
+                SslType = SslMode.Auto,
+                AuthenticationMode = AuthenticationType.Base64
+            };
             mailer.SendCompleted += compEvent;
             mailer.TestConnection();
-
-            Console.Out.WriteLine(mailer.SupportsTls );
-       
+            if (mailer.SupportsTls)
+            {
+                MessageBox.Show("Server Supports TLS");
+            }
+            else
+            {
+                MessageBox.Show("TLS is not Supported");
+            }
         }
 
         private void button5_Click(object sender, EventArgs e)
         {
-
             var mymessage = new MimeMailMessage
             {
-                From = new MimeMailAddress(mail),
-             Body  = "body",
-             Subject = "test explicit"
+                From = new MimeMailAddress(Mail),
+                Body = "body",
+                Subject = "test explicit"
             };
-            mymessage.To.Add(mail);
-            var mailer = new MimeMailer(host, tlsPort)
+            mymessage.To.Add(Mail);
+            var mailer = new MimeMailer(Host, TlsPort)
             {
-                User = user,
-                Password = pass,
+                User = User,
+                Password = Pass,
                 SslType = SslMode.Tls,
-                EnableImplicitSsl = false,
                 AuthenticationMode = AuthenticationType.Base64
             };
             mailer.SendCompleted += compEvent;
             mailer.SendMailAsync(mymessage);
-
-       
         }
 
+        private void button6_Click(object sender, EventArgs e)
+        {
+            var mailer = new MimeMailer(Host, TlsPort)
+            {
+                User = User,
+                Password = Pass,
+                AuthenticationMode = AuthenticationType.Base64
+            };
+            mailer.SendCompleted += compEvent;
+            MessageBox.Show("Ssl Type:" + mailer.DetectSslMode());
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            var mailer = new MimeMailer(Host, TlsPort)
+            {
+                User = User,
+                Password = Pass,
+                AuthenticationMode = AuthenticationType.Base64
+            };
+
+            //Uncomment following line to make it work
+            //The connection settings are wrong because the SslType is not specified
+            //mailer.SslType = SslMode.Tls;
+            mailer.SendCompleted += compEvent;
+            MessageBox.Show("Are connection settings correct?" + mailer.TestConnection());
         }
     }
-
+}

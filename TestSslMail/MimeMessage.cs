@@ -32,7 +32,7 @@ namespace TestSslMail
         public MimeMessage()
         {
             InitializeComponent();
-            var ssltypes = new SslMode();
+            const SslMode ssltypes = new SslMode();
             comboBox1.DataSource = Enum.GetValues(ssltypes.GetType());
             comboBox1.SelectedIndex = 0;
 
@@ -99,12 +99,15 @@ namespace TestSslMail
             var bodyText = body.Text;
             var sendAsHtml = checkHTML.Checked;
             
-            var mailMessage = new MimeMailMessage();
-            mailMessage.Subject = subjectText;
-            mailMessage.Body = bodyText;
-            mailMessage.Sender = _senderMail;
-            mailMessage.IsBodyHtml = sendAsHtml;
-            mailMessage.From = _senderMail;
+            var mailMessage = new MimeMailMessage
+            {
+                Subject = subjectText,
+                Body = bodyText,
+                IsBodyHtml = sendAsHtml,
+                From = _senderMail,
+                Sender = _senderMail
+            };
+
             var emailer = new MimeMailer(hostAddress,portNo)
             {
                 Host = hostAddress,
@@ -113,34 +116,27 @@ namespace TestSslMail
                 SslType = (SslMode)comboBox1.SelectedItem
             };
 
-            for (int x = 0; x < ToList.Count; ++x)
+            foreach (IMailAddress t in ToList)
             {
-                emailer.MailMessage.To.Add((MimeMailAddress) ToList[x]);
+                emailer.MailMessage.To.Add((MimeMailAddress) t);
             }
-            for (int x = 0; x < CcList.Count; ++x)
+            foreach (IMailAddress t in CcList)
             {
-                emailer.MailMessage.CC.Add((MimeMailAddress) CcList[x]);
+                emailer.MailMessage.CC.Add((MimeMailAddress) t);
             }
-            for (int x = 0; x < BccList.Count; ++x)
+            foreach (IMailAddress t in BccList)
             {
-                emailer.MailMessage.Bcc.Add((MimeMailAddress) BccList[x]);
+                emailer.MailMessage.Bcc.Add((MimeMailAddress) t);
             }
-            for (int x = 0; x < AttachList.Count; ++x)
+            foreach (Attachment t in AttachList)
             {
-                emailer.MailMessage.Attachments.Add((MimeAttachment) AttachList[x]);
+                emailer.MailMessage.Attachments.Add((MimeAttachment) t);
             }
             if (!loginNone.Checked)
             {
                 emailer.User = userName.Text;
                 emailer.Password = password.Text;
-                if (loginBase64.Checked)
-                {
-                    emailer.AuthenticationMode = AuthenticationType.Base64;
-                }
-                else
-                {
-                    emailer.AuthenticationMode = AuthenticationType.PlainText;
-                }
+                emailer.AuthenticationMode = loginBase64.Checked ? AuthenticationType.Base64 : AuthenticationType.PlainText;
             }
             else
             {
@@ -162,13 +158,11 @@ namespace TestSslMail
 
         private void button3_Click(object sender, EventArgs e)
         {
-            OpenFileDialog dlg = new OpenFileDialog();
-            dlg.CheckFileExists = true;
-            dlg.CheckPathExists = true;
+            var dlg = new OpenFileDialog {CheckFileExists = true, CheckPathExists = true};
             if (dlg.ShowDialog() == DialogResult.OK)
             {
-                MimeAttachment a = new MimeAttachment(dlg.FileName);
-                AttachType at = new AttachType();
+                var a = new MimeAttachment(dlg.FileName);
+                var at = new AttachType();
                 at.ShowDialog(this);
                 if (at.DialogResult == DialogResult.OK)
                 {

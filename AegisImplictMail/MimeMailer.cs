@@ -17,14 +17,32 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Mail;
-using System.Runtime.Remoting.Messaging;
 
 namespace AegisImplicitMail
 {
-
+    /// <summary>
+    /// Type of Ssl
+    /// </summary>
     public enum SslMode
     {
-        None = -1, Ssl = 0 ,Tls = 1,Auto =2
+        /// <summary>
+        /// None Ssl Servers
+        /// </summary>
+        None = -1, 
+
+        /// <summary>
+        /// Explicit Ssl Servers
+        /// </summary>
+        Ssl = 0 ,
+        /// <summary>
+        /// Implicit Ssl Servers
+        /// </summary>
+        Tls = 1,
+
+        /// <summary>
+        /// todo:Authomaticaly detect type of ssl
+        /// </summary>
+        Auto =2
     }
     /// <summary>
     /// Generate Mime Messages
@@ -46,7 +64,7 @@ namespace AegisImplicitMail
         }
 
         private SslMode _ssltype = SslMode.None;
-        public SslMode SslType
+        public new SslMode SslType
         {
             get { return _ssltype;}
             set
@@ -80,24 +98,15 @@ namespace AegisImplicitMail
             }
         }
 
-        /// <summary>
-        /// Indecate if we need to send mail as html or plain text
-        /// </summary>
-        private readonly bool _useHtml;
-
+    
 
         /// <summary>
         /// Indicate if ssl server is implicit server or explicit
         /// </summary>
         private  bool _implictSsl;
 
-        private readonly AuthenticationType _authenticationType;
 
-        /// <summary>
-        /// Priority of email
-        /// </summary>
-        private MailPriority _messagePriority;
-
+       
         /// <summary>
         /// Construct an emailer object to send mime mail
         /// </summary>
@@ -105,13 +114,10 @@ namespace AegisImplicitMail
         /// <param name="port">Port number of server</param>
         /// <param name="userName">User name</param>
         /// <param name="passWord">Password</param>
-        /// <param name="isSslType it a Ssl/Tls server?</param>
-        /// <param name="senderDisplayName">Sender's name</param>
-        /// <param name="senderEmailAddresss">Sender's email address</param>
-        /// <param name="useHtml">Are we going to send this email as a html message or a plain text?</param>
+        /// <param name="sslType">Defines the type of encryption that your mail server uses</param>
         /// <param name="implictSsl">Indicate if the ssl is an implict ssl</param>
-        /// <param name="messagePriority">Priority of message</param>
-        public MimeMailer(string host, int port = 465, string userName = null, string passWord ="", SslMode sslType = SslMode.None, bool implictSsl = false, MailPriority messagePriority = MailPriority.Normal, AuthenticationType authenticationType = AuthenticationType.PlainText):base(host,port)
+        /// <param name="authenticationType">Defines type of authentication that your smtp server uses</param>
+        public MimeMailer(string host, int port = 465, string userName = null, string passWord ="", SslMode sslType = SslMode.None, bool implictSsl = false, AuthenticationType authenticationType = AuthenticationType.PlainText):base(host,port)
         {
             Host = host;
             Port = port;
@@ -119,8 +125,7 @@ namespace AegisImplicitMail
             Password = passWord;
             base.SslType = sslType;
             _implictSsl = implictSsl;
-            _messagePriority = messagePriority;
-            _authenticationType = authenticationType;
+            AuthenticationMode = authenticationType;
         }
 
         public MimeMailer(string host):base(host)
@@ -132,7 +137,7 @@ namespace AegisImplicitMail
         {
         }
 
-        public MimeMailer()
+        public MimeMailer():base()
         {
         }
 
@@ -155,8 +160,7 @@ namespace AegisImplicitMail
                 {
                     From = (MailAddress)sender,
                     Subject = subject,
-                    Body = body,
-                    IsBodyHtml = _useHtml
+                    Body = body
                 };
                 toAddresses.ForEach(a => msg.To.Add((MimeMailAddress) a));
                 if (ccAddresses != null) ccAddresses.ForEach(a => msg.To.Add((MimeMailAddress) a));
@@ -193,12 +197,15 @@ namespace AegisImplicitMail
 
         public void Send(string from, string recipiant, string subject, string body)
         {
-            var mailMessage = new MimeMailMessage();
-            mailMessage.From = new MimeMailAddress(from);
+            var mailMessage = new MimeMailMessage
+            {
+                From = new MimeMailAddress(@from),
+           Subject = subject,
+           Body = body
+            
+            };
             mailMessage.To.Add(new MimeMailAddress(recipiant));
-            mailMessage.Subject = subject;
-            mailMessage.Body = body;
-            Send(mailMessage,null);
+            Send(mailMessage);
 
         }
     }
