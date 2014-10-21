@@ -8,10 +8,10 @@ using System.Resources;
 [assembly: AssemblyTitle("Aegis Implicit Mail")]
 [assembly: AssemblyDescription("Open Source implicit and explicit mime and smime mail library")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Aegis Solutions")]
+[assembly: AssemblyCompany("AFD")]
 [assembly: AssemblyProduct("AegisImplicitMail")]
 [assembly: AssemblyCopyright("Copyright © Araz Farhang Dareshuri  2014")]
-[assembly: AssemblyTrademark("Aegis")]
+[assembly: AssemblyTrademark("AegisImplicitMail (AIM)")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
@@ -32,6 +32,6 @@ using System.Resources;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.0.1")]
+[assembly: AssemblyFileVersion("1.0.0.1")]
 [assembly: NeutralResourcesLanguageAttribute("en")]

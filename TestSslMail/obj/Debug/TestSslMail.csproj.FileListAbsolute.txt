@@ -39,4 +39,3 @@ D:\AEGIS\AegisImplicitMail\TestSslMail\obj\Debug\TestSslMail.MimeMessage.resourc
 D:\AEGIS\AegisImplicitMail\TestSslMail\obj\Debug\TestSslMail.MainForm.resources
 D:\AEGIS\AegisImplicitMail\TestSslMail\obj\Debug\TestSslMail.SmimeMessage.resources
 D:\AEGIS\AegisImplicitMail\TestSslMail\bin\Debug\AegisImplicitMail.dll
-D:\AEGIS\AegisImplicitMail\TestSslMail\bin\Debug\AegisImplicitMail.pdb

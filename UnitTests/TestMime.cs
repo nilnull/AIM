@@ -21,7 +21,7 @@ namespace UnitTests
             mymessage.From = new MimeMailAddress(mail);
        
 
-            var mailer = new MimeMailer(host, 465, user, pass, SslMode.Ssl, true,
+            var mailer = new MimeMailer(host, 465, user, pass, SslMode.Ssl,
                 AuthenticationType.Base64);
             mailer.SendCompleted += compEvent;
             mailer.SendMailAsync(mymessage);

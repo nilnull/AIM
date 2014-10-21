@@ -1,0 +1,2 @@
+D:\AEGIS\AegisImplicitMail\AegisImplictMail\bin\Release\AegisImplicitMail.dll
+D:\AEGIS\AegisImplicitMail\AegisImplictMail\obj\Release\AegisImplicitMail.dll
