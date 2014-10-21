@@ -54,10 +54,9 @@ namespace AegisImplicitMail
         public SmimeMailer(string host, int port, string userName, string passWord, string senderEmailAddresss,
             string senderDisplayName, X509Certificate2 signingCertificate2 = null,
             X509Certificate2 encryptionCertificate2 = null, SslMode sslType = SslMode.None, 
-            bool implictSsl = false, 
             bool sign = false,
             List<X509Certificate2> toSigningCerts = null, List<X509Certificate2> toEncryptionCerts = null,
-            AuthenticationType authenticationType = AuthenticationType.Base64, bool encrypt = true):base(host,port,userName,passWord,sslType,implictSsl,authenticationType)
+            AuthenticationType authenticationType = AuthenticationType.Base64, bool encrypt = true):base(host,port,userName,passWord,sslType,authenticationType)
         {
             if (encryptionCertificate2 == null || toEncryptionCerts == null)
                 throw new ArgumentNullException("encryptionCertificate2");

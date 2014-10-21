@@ -90,20 +90,15 @@ namespace AegisImplicitMail
         }
         public bool EnableImplicitSsl
         {
-            get { return _implictSsl; }
+            get { return _ssltype == SslMode.Ssl; }
             set
             {
-                _implictSsl = value;
+             
                 _ssltype = value ? SslMode.Ssl : SslMode.Tls;
             }
         }
 
     
-
-        /// <summary>
-        /// Indicate if ssl server is implicit server or explicit
-        /// </summary>
-        private  bool _implictSsl;
 
 
        
@@ -117,14 +112,15 @@ namespace AegisImplicitMail
         /// <param name="sslType">Defines the type of encryption that your mail server uses</param>
         /// <param name="implictSsl">Indicate if the ssl is an implict ssl</param>
         /// <param name="authenticationType">Defines type of authentication that your smtp server uses</param>
-        public MimeMailer(string host, int port = 465, string userName = null, string passWord ="", SslMode sslType = SslMode.None, bool implictSsl = false, AuthenticationType authenticationType = AuthenticationType.PlainText):base(host,port)
+        public MimeMailer(string host, int port = 465, string userName = null, string passWord ="", SslMode sslType = SslMode.None, AuthenticationType authenticationType = AuthenticationType.PlainText):base(host,port)
         {
             Host = host;
             Port = port;
             User = userName;
             Password = passWord;
             base.SslType = sslType;
-            _implictSsl = implictSsl;
+            if (sslType == SslMode.Auto)
+                SslType = DetectSslMode();
             AuthenticationMode = authenticationType;
         }
 

@@ -213,6 +213,11 @@ namespace AegisImplicitMail
             return SslMode.None;
         }
 
+
+        /// <summary>
+        /// Test if your settings are correct
+        /// </summary>
+        /// <returns>Return true if your connection settings are correct , otherwise false</returns>
         public bool TestConnection()
         {
             lock (this)

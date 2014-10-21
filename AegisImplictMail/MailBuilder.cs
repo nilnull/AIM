@@ -112,7 +112,7 @@ namespace AegisImplicitMail
             if (attachmentAddress != null)
                 attachmentAddress.ForEach(a=> msg.Attachments.Add(new MimeAttachment(a)));
     
-            var mm = new MimeMailer(_host,_port,_userName,_passWord,_ssl,true,_authenticationType);
+            var mm = new MimeMailer(_host,_port,_userName,_passWord,_ssl,_authenticationType);
              mm.Send(msg,_onSendCallBack);
 
    
