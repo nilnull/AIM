@@ -39,3 +39,15 @@ D:\AEGIS\AegisImplicitMail\TestSslMail\obj\Debug\TestSslMail.MimeMessage.resourc
 D:\AEGIS\AegisImplicitMail\TestSslMail\obj\Debug\TestSslMail.MainForm.resources
 D:\AEGIS\AegisImplicitMail\TestSslMail\obj\Debug\TestSslMail.SmimeMessage.resources
 D:\AEGIS\AegisImplicitMail\TestSslMail\bin\Debug\AegisImplicitMail.dll
+F:\Personal\Aim\Git\netimplicitssl-code\TestSslMail\bin\Debug\TestSslMail.exe.config
+F:\Personal\Aim\Git\netimplicitssl-code\TestSslMail\obj\Debug\TestSslMail.exe
+F:\Personal\Aim\Git\netimplicitssl-code\TestSslMail\obj\Debug\TestSslMail.pdb
+F:\Personal\Aim\Git\netimplicitssl-code\TestSslMail\obj\Debug\TestSslMail.csprojResolveAssemblyReference.cache
+F:\Personal\Aim\Git\netimplicitssl-code\TestSslMail\obj\Debug\TestEmailer.AttachType.resources
+F:\Personal\Aim\Git\netimplicitssl-code\TestSslMail\obj\Debug\TestSslMail.Dialogs.GetUser.resources
+F:\Personal\Aim\Git\netimplicitssl-code\TestSslMail\obj\Debug\TestSslMail.Dialogs.GetUserWithCert.resources
+F:\Personal\Aim\Git\netimplicitssl-code\TestSslMail\obj\Debug\TestSslMail.MainForm.resources
+F:\Personal\Aim\Git\netimplicitssl-code\TestSslMail\obj\Debug\TestSslMail.MimeMessage.resources
+F:\Personal\Aim\Git\netimplicitssl-code\TestSslMail\obj\Debug\TestSslMail.Properties.Resources.resources
+F:\Personal\Aim\Git\netimplicitssl-code\TestSslMail\obj\Debug\TestSslMail.SmimeMessage.resources
+F:\Personal\Aim\Git\netimplicitssl-code\TestSslMail\obj\Debug\TestSslMail.csproj.GenerateResource.Cache

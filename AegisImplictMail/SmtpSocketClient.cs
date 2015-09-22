@@ -11,12 +11,15 @@
  * Aegis Implict Ssl Mailer is an implict ssl package to use mine/smime messages on implict ssl servers
  */
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Net.Mail;
 using System.Runtime.Remoting;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.IO;
+using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Threading;
 
@@ -257,8 +260,12 @@ namespace AegisImplicitMail
             }
         }
 
+
+   
+
         private bool EsablishSmtp()
         {
+            
             _con = new SmtpSocketConnection();
             if (ClientCertificates != null)
             {
@@ -841,69 +848,7 @@ namespace AegisImplicitMail
                     buf.Append(SmtpCommands.Subject);
                     buf.Append(MailMessage.Subject);
                     _con.SendCommand(buf.ToString());
-                    buf.Length = 0;
-                    //declare mime info for message
-                    _con.SendCommand("MIME-Version: 1.0");
-                    if (!_sendAsHtml ||
-                        (_sendAsHtml && ((MimeAttachment.InlineCount > 0) || (MimeAttachment.AttachCount > 0))))
-                    {
-                        _con.SendCommand("Content-Type: multipart/mixed; boundary=\"#SEPERATOR1#\"\r\n");
-                        _con.SendCommand("This is a multi-part message.\r\n\r\n--#SEPERATOR1#");
-                    }
-                    if (_sendAsHtml)
-                    {
-                        _con.SendCommand("Content-Type: multipart/related; boundary=\"#SEPERATOR2#\"");
-                        _con.SendCommand("Content-Transfer-Encoding: quoted-printable\r\n");
-                        _con.SendCommand("--#SEPERATOR2#");
-
-                    }
-                    if (_sendAsHtml && MimeAttachment.InlineCount > 0)
-                    {
-                        _con.SendCommand("Content-Type: multipart/alternative; boundary=\"#SEPERATOR3#\"");
-                        _con.SendCommand("Content-Transfer-Encoding: quoted-printable\r\n");
-                        _con.SendCommand("--#SEPERATOR3#");
-                        _con.SendCommand("Content-Type: text/html; charset=iso-8859-1");
-                        _con.SendCommand("Content-Transfer-Encoding: quoted-printable\r\n");
-                        _con.SendCommand(BodyToQuotedPrintable());
-                        _con.SendCommand("--#SEPERATOR3#");
-                        _con.SendCommand("Content-Type: text/plain; charset=iso-8859-1");
-                        _con.SendCommand(
-                            "\r\nIf you can see this, then your email client does not support MHTML messages.");
-                        _con.SendCommand("--#SEPERATOR3#--\r\n");
-                        _con.SendCommand("--#SEPERATOR2#\r\n");
-                        SendAttachments(buf, AttachmentLocation.Inline);
-                    }
-                    else
-                    {
-                        if (_sendAsHtml)
-                        {
-                            _con.SendCommand("Content-Type: text/html; charset=iso-8859-1");
-                            _con.SendCommand("Content-Transfer-Encoding: quoted-printable\r\n");
-                        }
-                        else
-                        {
-                            _con.SendCommand("Content-Type: text/plain; charset=iso-8859-1");
-                            _con.SendCommand("Content-Transfer-Encoding: quoted-printable\r\n");
-                        }
-                        _con.SendCommand(BodyToQuotedPrintable());
-                    }
-                    if (_sendAsHtml)
-                    {
-                        _con.SendCommand("\r\n--#SEPERATOR2#--");
-                    }
-                    if (MimeAttachment.AttachCount > 0)
-                    {
-                        //send normal attachments
-                        SendAttachments(buf, AttachmentLocation.Attachmed);
-                    }
-                    //finish up message
-                    _con.SendCommand("");
-                    if (MimeAttachment.InlineCount > 0 || MimeAttachment.AttachCount > 0)
-                    {
-                        _con.SendCommand("--#SEPERATOR1#--");
-                    }
-
-                    _con.SendCommand(".");
+                    SendMessageBody(buf);
                     _con.GetReply(out response, out code);
                     Console.Out.WriteLine("Sent Response :" + response);
 
@@ -920,6 +865,85 @@ namespace AegisImplicitMail
                     }
                 }
             }
+        }
+
+        private void SendMessageBody(StringBuilder buf)
+        {
+           
+            var encodingHtmlHeader = "Content-Type: text/html; charset=" + MailMessage.BodyEncoding.EncodingName;
+            var encodingPlainHeader = "Content-Type: text/plain; charset=" + MailMessage.BodyEncoding.EncodingName;
+            const string encodingQuotedPrintable = "Content-Transfer-Encoding: quoted-printable\r\n";
+
+            buf.Length = 0;
+            //declare mime info for message
+            _con.SendCommand("MIME-Version: 1.0");
+            if (!_sendAsHtml ||
+                (_sendAsHtml && ((MimeAttachment.InlineCount > 0) || (MimeAttachment.AttachCount > 0))))
+            {
+                _con.SendCommand("Content-Type: multipart/mixed; boundary=\"#SEPERATOR1#\"\r\n");
+                _con.SendCommand("This is a multi-part message.\r\n\r\n--#SEPERATOR1#");
+            }
+            if (_sendAsHtml)
+            {
+                _con.SendCommand("Content-Type: multipart/related; boundary=\"#SEPERATOR2#\"");
+                _con.SendCommand(encodingQuotedPrintable);
+                _con.SendCommand("--#SEPERATOR2#");
+            }
+            if (_sendAsHtml && MimeAttachment.InlineCount > 0)
+            {
+                _con.SendCommand("Content-Type: multipart/alternative; boundary=\"#SEPERATOR3#\"");
+                _con.SendCommand(encodingQuotedPrintable);
+                _con.SendCommand("--#SEPERATOR3#");
+
+          //      _con.SendCommand("Content-Type: text/html; charset=iso-8859-1");
+                _con.SendCommand(encodingHtmlHeader);
+                _con.SendCommand(encodingQuotedPrintable);
+                _con.SendCommand(BodyToQuotedPrintable());
+                _con.SendCommand("--#SEPERATOR3#");
+             //   _con.SendCommand("Content-Type: text/plain; charset=iso-8859-1");
+                _con.SendCommand(encodingPlainHeader);
+             
+                _con.SendCommand(
+                    "\r\nIf you can see this, then your email client does not support MHTML messages.");
+                _con.SendCommand("--#SEPERATOR3#--\r\n");
+                _con.SendCommand("--#SEPERATOR2#\r\n");
+                SendAttachments(buf, AttachmentLocation.Inline);
+            }
+            else
+            {
+                if (_sendAsHtml)
+                {
+                    _con.SendCommand(encodingHtmlHeader);
+                    _con.SendCommand(encodingQuotedPrintable);
+               //     _con.SendCommand(" BODY=8BITMIME SMTPUTF8\r\n");
+           
+                   
+                }
+                else
+                {
+                    _con.SendCommand(encodingPlainHeader);
+                    _con.SendCommand(encodingQuotedPrintable);
+                 //   _con.SendCommand(" BODY=8BITMIME SMTPUTF8\r\n");
+                }
+                _con.SendCommand(BodyToQuotedPrintable());
+            }
+            if (_sendAsHtml)
+            {
+                _con.SendCommand("\r\n--#SEPERATOR2#--");
+            }
+            if (MimeAttachment.AttachCount > 0)
+            {
+                //send normal attachments
+                SendAttachments(buf, AttachmentLocation.Attachmed);
+            }
+            //finish up message
+            _con.SendCommand("");
+            if (MimeAttachment.InlineCount > 0 || MimeAttachment.AttachCount > 0)
+            {
+                _con.SendCommand("--#SEPERATOR1#--");
+            }
+
+            _con.SendCommand(".");
         }
 
 
@@ -1053,6 +1077,7 @@ namespace AegisImplicitMail
 		/// <returns>The encoded body.</returns>
 		private string BodyToQuotedPrintable()
 		{
+//         var ENCODED = Encoding.UTF8.GetString(MailMessage.Body);
 			var stringBuilder = new StringBuilder();
 			sbyte currentByte;
 			foreach (char t in MailMessage.Body)

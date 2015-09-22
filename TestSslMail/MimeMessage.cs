@@ -130,6 +130,8 @@ namespace TestSslMail
             }
             foreach (Attachment t in AttachList)
             {
+              
+                emailer.MailMessage.BodyEncoding
                 emailer.MailMessage.Attachments.Add((MimeAttachment) t);
             }
             if (!loginNone.Checked)

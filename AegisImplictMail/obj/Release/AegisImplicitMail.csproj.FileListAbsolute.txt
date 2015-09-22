@@ -1,2 +1,5 @@
 D:\AEGIS\AegisImplicitMail\AegisImplictMail\bin\Release\AegisImplicitMail.dll
 D:\AEGIS\AegisImplicitMail\AegisImplictMail\obj\Release\AegisImplicitMail.dll
+F:\Personal\Aim\Git\netimplicitssl-code\AegisImplictMail\bin\Release\AegisImplicitMail.dll
+F:\Personal\Aim\Git\netimplicitssl-code\AegisImplictMail\obj\Release\AegisImplicitMail.csprojResolveAssemblyReference.cache
+F:\Personal\Aim\Git\netimplicitssl-code\AegisImplictMail\obj\Release\AegisImplicitMail.dll

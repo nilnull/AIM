@@ -175,7 +175,6 @@ namespace AegisImplicitMail
         public void Send(AbstractMailMessage message, SendCompletedEventHandler onSendCallBack = null)
         {
 
-                Console.Out.WriteLine("Implicit");
                 SendCompleted += onSendCallBack;
                 SendMailAsync(message);
                 // Connecting to the server and configuring it
@@ -193,6 +192,7 @@ namespace AegisImplicitMail
 
         public void Send(string from, string recipiant, string subject, string body)
         {
+           var allowUnicode = this.IsUnicodeSupported();
             var mailMessage = new MimeMailMessage
             {
                 From = new MimeMailAddress(@from),
@@ -203,6 +203,11 @@ namespace AegisImplicitMail
             mailMessage.To.Add(new MimeMailAddress(recipiant));
             Send(mailMessage);
 
+        }
+
+        private object IsUnicodeSupported()
+        {
+            return true;
         }
     }
 }
