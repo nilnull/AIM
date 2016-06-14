@@ -799,9 +799,9 @@ namespace AegisImplicitMail
                     _con.GetReply(out response,out code);
                     if (!ParseData(code, response)) return;
                     _con.SendCommand("X-Mailer: AIM.MimeMailer");
-                    DateTime today = DateTime.Now;
+                    DateTime today = DateTime.UtcNow;
                     buf.Append(SmtpCommands.Date);
-                    buf.Append(today.ToLongDateString());
+										buf.Append(today.ToString("r"));
                     _con.SendCommand(buf.ToString());
                     buf.Length = 0;
                     buf.Append(SmtpCommands.From);
