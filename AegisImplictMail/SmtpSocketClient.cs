@@ -332,6 +332,10 @@ namespace AegisImplicitMail
                         _con.GetReply(out response, out code);
                         if (!ParseStartTls(code, response)) return false;
                         _con.SwitchToSsl();
+
+                        //outlook365 needs EHLO to be resent
+                        _con.SendCommand(buf.ToString());
+                        _con.GetReply(out response, out code);
                     }
                     else
                     {
@@ -869,10 +873,14 @@ namespace AegisImplicitMail
 
         private void SendMessageBody(StringBuilder buf)
         {
-           
-            var encodingHtmlHeader = "Content-Type: text/html; charset=" + MailMessage.BodyEncoding.EncodingName;
-            var encodingPlainHeader = "Content-Type: text/plain; charset=" + MailMessage.BodyEncoding.EncodingName;
-            const string encodingQuotedPrintable = "Content-Transfer-Encoding: quoted-printable\r\n";
+            var encodingString = TransferEncoder.GetContentTypeName( MailMessage.BodyEncoding);
+            //Console.WriteLine(encodingString);
+            //var encodingString = "iso-8859-1";
+            //var encodingString = "utf-8";
+            var encodingHtmlHeader = "Content-Type: text/html; charset=" + encodingString;
+            var encodingPlainHeader = "Content-Type: text/plain; charset=" + encodingString;
+            var encodingQuotedPrintable = MailMessage.BodyEncoding.Equals(Encoding.ASCII)? "Content-Transfer-Encoding: quoted-printable\r\n":
+                "Content-Transfer-Encoding: base64\r\n";
 
             buf.Length = 0;
             //declare mime info for message
@@ -898,7 +906,7 @@ namespace AegisImplicitMail
           //      _con.SendCommand("Content-Type: text/html; charset=iso-8859-1");
                 _con.SendCommand(encodingHtmlHeader);
                 _con.SendCommand(encodingQuotedPrintable);
-                _con.SendCommand(BodyToQuotedPrintable());
+                _con.SendCommand(GetEncodedBody());
                 _con.SendCommand("--#SEPERATOR3#");
              //   _con.SendCommand("Content-Type: text/plain; charset=iso-8859-1");
                 _con.SendCommand(encodingPlainHeader);
@@ -925,7 +933,8 @@ namespace AegisImplicitMail
                     _con.SendCommand(encodingQuotedPrintable);
                  //   _con.SendCommand(" BODY=8BITMIME SMTPUTF8\r\n");
                 }
-                _con.SendCommand(BodyToQuotedPrintable());
+                //_con.SendCommand(MailMessage.Body);
+                _con.SendCommand(GetEncodedBody());
             }
             if (_sendAsHtml)
             {
@@ -1068,7 +1077,18 @@ namespace AegisImplicitMail
 		}
 
         #endregion
-		
+
+        private string GetEncodedBody()
+        {
+            if (MailMessage.BodyEncoding.Equals(Encoding.ASCII)) 
+            {
+                return BodyToQuotedPrintable();
+            }
+            else
+            {
+                return TransferEncoder.ToBase64(MailMessage.BodyEncoding.GetBytes(MailMessage.Body));
+            }
+        }
         /// <summary>
 		/// Encode the body as in quoted-printable format.
 		/// Adapted from PJ Naughter's quoted-printable encoding code.

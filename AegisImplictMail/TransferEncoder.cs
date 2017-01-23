@@ -54,6 +54,17 @@ namespace AegisImplicitMail
 
         # region Methods
 
+        internal static string GetContentTypeName( Encoding encoding)
+        {
+            if (encoding.Equals(Encoding.UTF8)) return "utf-8";
+            if (encoding.Equals(Encoding.UTF7)) return "utf-7";
+            if (encoding.Equals(Encoding.Unicode)) return "utf-16";
+            if (encoding.Equals(Encoding.UTF32)) return "utf-32";
+
+            return "iso-8859-1";
+
+        }
+
         internal static string GetTransferEncodingName(TransferEncoding encoding)
         {
             switch (encoding)
