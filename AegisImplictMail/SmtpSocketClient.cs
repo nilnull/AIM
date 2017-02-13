@@ -744,10 +744,15 @@ namespace AegisImplicitMail
                     int code;
                     var buf = new StringBuilder {Length = 0};
                     buf.Append(SmtpCommands.Mail);
+                    if (!string.IsNullOrEmpty(MailMessage.From.DisplayName))
+                    {
+                        buf.Append("\"");
+                        buf.Append(MailMessage.From.DisplayName);
+                        buf.Append("\" ");
+                    }
                     buf.Append("<");
-                    buf.Append(MailMessage.From);
-                    buf.Append(">");
-                    
+                    buf.Append(MailMessage.From.Address);
+                    buf.Append(">");                    
                    
                     _con.SendCommand(buf.ToString());
                     _con.GetReply(out response, out code);
