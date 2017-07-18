@@ -855,7 +855,7 @@ namespace AegisImplicitMail
                     _con.SendCommand(buf.ToString());
                     buf.Length = 0;
                     buf.Append(SmtpCommands.Subject);
-                    buf.Append(MailMessage.Subject);
+                    buf.Append(GetEncodedSubject());
                     _con.SendCommand(buf.ToString());
                     SendMessageBody(buf);
                     _con.GetReply(out response, out code);
@@ -1082,6 +1082,18 @@ namespace AegisImplicitMail
 		}
 
         #endregion
+        private string GetEncodedSubject()
+        {
+            if (MailMessage.SubjectEncoding.Equals(Encoding.ASCII))
+            {
+                return MailMessage.Subject;
+            }
+            else
+            {
+                var encodingName = MailMessage.SubjectEncoding.BodyName.ToLower();
+                return "=?" + encodingName + "?B?" + TransferEncoder.ToBase64(MailMessage.SubjectEncoding.GetBytes(MailMessage.Subject)) + "?=";
+            }
+        }
 
         private string GetEncodedBody()
         {

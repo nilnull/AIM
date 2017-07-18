@@ -1,2 +1,3 @@
 D:\AEGIS\AegisImplicitMail\TestSslMail\bin\Release\TestSslMail.exe.config
 F:\Personal\Aim\Git\netimplicitssl-code\TestSslMail\bin\Release\TestSslMail.exe.config
+C:\Users\Aragorn\Source\Repos\netimplicitssl\TestSslMail\bin\Release\TestSslMail.exe.config
