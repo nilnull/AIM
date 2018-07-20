@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net.Mail;
 using System.Net.Mime;
 
@@ -64,7 +65,10 @@ namespace AegisImplicitMail
         public MimeAttachment(string fileName, ContentType contentType, AttachmentLocation location)
             : base(fileName)
         {
-
+            if (string.IsNullOrEmpty(fileName))
+            {
+                throw new ArgumentException(nameof(fileName));
+            }
             FileName = fileName;
             ContentType = contentType;
             Location = location;
@@ -78,6 +82,32 @@ namespace AegisImplicitMail
         public MimeAttachment(string filename)
             : this(filename, new ContentType(MediaTypeNames.Application.Octet), AttachmentLocation.Attachmed)
         {
+            Location = Location;
+        }
+
+        /// <summary>
+        /// Constructor for passing stream attachments.
+        /// </summary>
+        /// <param name="contentStream">Stream to the attachment contents</param>
+        /// <param name="name">Name of the attachment as it will appear on the e-mail</param>
+        /// <param name="contentStream">Where to put the attachment</param>
+        public MimeAttachment(Stream contentStream, string name, AttachmentLocation location = AttachmentLocation.Attachmed)
+            :this(contentStream, name, new ContentType(MediaTypeNames.Application.Octet), location)
+        {
+        }
+
+        /// <summary>
+        /// Constructor for passing stream attachments.
+        /// </summary>
+        /// <param name="contentStream">Stream to the attachment contents</param>
+        /// <param name="name">Name of the attachment as it will appear on the e-mail</param>
+        /// <param name="contentType">Content type of the attachment</param>
+        /// <param name="contentStream">Where to put the attachment</param>
+        public MimeAttachment(Stream contentStream, string name, ContentType contentType, AttachmentLocation location = AttachmentLocation.Attachmed)
+            : base(contentStream, name)
+        {
+            Location = location;
+            ContentType = contentType;
         }
 
         /// <summary>
