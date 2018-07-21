@@ -57,7 +57,6 @@ namespace AegisImplicitMail
         private SmtpSocketConnection _con;
         private int _port;
         private int _timeout = 100000;
-        private readonly bool _sendAsHtml;
         private AuthenticationType _authMode = AuthenticationType.UseDefualtCridentials;
         private string _user;
         private string _password;
@@ -157,7 +156,7 @@ namespace AegisImplicitMail
         /// <param name="onMailSend">This function will be called after mail is sent</param>
         /// <param name="sslType">The type of Ssl used in your Smtp Mail Server <see cref="SslMode"/> </param>
         /// <exception cref="ArgumentNullException">If username and pass is needed and not provided</exception>
-        public SmtpSocketClient(string host, int port = 465, string username = null, string password = null, AuthenticationType authenticationMode = AuthenticationType.Base64, bool useHtml = true, MimeMailMessage msg = null, SendCompletedEventHandler onMailSend = null, SslMode sslType = SslMode.None)
+        public SmtpSocketClient(string host, int port = 465, string username = null, string password = null, AuthenticationType authenticationMode = AuthenticationType.Base64, MimeMailMessage msg = null, SendCompletedEventHandler onMailSend = null, SslMode sslType = SslMode.None)
             : this(msg)
         {
             if ((AuthenticationMode != AuthenticationType.UseDefualtCridentials) &&
@@ -172,7 +171,6 @@ namespace AegisImplicitMail
             _password = password;
             _authMode = authenticationMode;
             _mailMessage = msg;
-            _sendAsHtml = useHtml;
             SendCompleted = onMailSend;
             SslType = sslType;
 
@@ -890,19 +888,19 @@ namespace AegisImplicitMail
             buf.Length = 0;
             //declare mime info for message
             _con.SendCommand("MIME-Version: 1.0");
-            if (!_sendAsHtml ||
-                (_sendAsHtml && ((MimeAttachment.InlineCount > 0) || (MimeAttachment.AttachCount > 0))))
+            if (!MailMessage.IsBodyHtml ||
+                (MailMessage.IsBodyHtml && ((MimeAttachment.InlineCount > 0) || (MimeAttachment.AttachCount > 0))))
             {
                 _con.SendCommand("Content-Type: multipart/mixed; boundary=\"#SEPERATOR1#\"\r\n");
                 _con.SendCommand("This is a multi-part message.\r\n\r\n--#SEPERATOR1#");
             }
-            if (_sendAsHtml)
+            if (MailMessage.IsBodyHtml)
             {
                 _con.SendCommand("Content-Type: multipart/related; boundary=\"#SEPERATOR2#\"");
                 _con.SendCommand(encodingQuotedPrintable);
                 _con.SendCommand("--#SEPERATOR2#");
             }
-            if (_sendAsHtml && MimeAttachment.InlineCount > 0)
+            if (MailMessage.IsBodyHtml && MimeAttachment.InlineCount > 0)
             {
                 _con.SendCommand("Content-Type: multipart/alternative; boundary=\"#SEPERATOR3#\"");
                 _con.SendCommand(encodingQuotedPrintable);
@@ -924,7 +922,7 @@ namespace AegisImplicitMail
             }
             else
             {
-                if (_sendAsHtml)
+                if (MailMessage.IsBodyHtml)
                 {
                     _con.SendCommand(encodingHtmlHeader);
                     _con.SendCommand(encodingQuotedPrintable);
@@ -941,7 +939,7 @@ namespace AegisImplicitMail
                 //_con.SendCommand(MailMessage.Body);
                 _con.SendCommand(GetEncodedBody());
             }
-            if (_sendAsHtml)
+            if (MailMessage.IsBodyHtml)
             {
                 _con.SendCommand("\r\n--#SEPERATOR2#--");
             }
