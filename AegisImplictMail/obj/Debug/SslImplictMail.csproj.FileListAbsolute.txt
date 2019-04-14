@@ -1,7 +1,0 @@
-C:\Users\Araz\Downloads\Compressed\SmtpEmailer1\SmtpEmailer\SslImplictMail\bin\Debug\SslImplictMail.dll
-C:\Users\Araz\Downloads\Compressed\SmtpEmailer1\SmtpEmailer\SslImplictMail\bin\Debug\SslImplictMail.pdb
-C:\Users\Araz\Downloads\Compressed\SmtpEmailer1\SmtpEmailer\SslImplictMail\obj\Debug\SslImplictMail.dll
-C:\Users\Araz\Downloads\Compressed\SmtpEmailer1\SmtpEmailer\SslImplictMail\obj\Debug\SslImplictMail.pdb
-C:\Users\Araz\Downloads\Compressed\SmtpEmailer1\SmtpEmailer\SslImplictMail\obj\Debug\SslImplictMail.csprojResolveAssemblyReference.cache
-C:\Users\Araz\Downloads\Compressed\SmtpEmailer1\SmtpEmailer\SslImplictMail\bin\Debug\BouncyCastle.Crypto.dll
-C:\Users\Araz\Downloads\Compressed\SmtpEmailer1\SmtpEmailer\SslImplictMail\bin\Debug\BouncyCastle.Crypto.pdb

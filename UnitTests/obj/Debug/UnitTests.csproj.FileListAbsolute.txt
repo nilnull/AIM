@@ -1,6 +1,0 @@
-D:\AEGIS\AegisImplicitMail\UnitTests\bin\Debug\UnitTests.dll
-D:\AEGIS\AegisImplicitMail\UnitTests\bin\Debug\UnitTests.pdb
-D:\AEGIS\AegisImplicitMail\UnitTests\obj\Debug\UnitTests.csprojResolveAssemblyReference.cache
-D:\AEGIS\AegisImplicitMail\UnitTests\obj\Debug\UnitTests.dll
-D:\AEGIS\AegisImplicitMail\UnitTests\obj\Debug\UnitTests.pdb
-D:\AEGIS\AegisImplicitMail\UnitTests\bin\Debug\AegisImplicitMail.dll

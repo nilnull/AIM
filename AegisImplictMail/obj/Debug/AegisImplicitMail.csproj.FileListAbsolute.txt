@@ -1,8 +1,0 @@
-D:\AEGIS\AegisImplicitMail\AegisImplictMail\bin\Debug\AegisImplicitMail.dll
-D:\AEGIS\AegisImplicitMail\AegisImplictMail\bin\Debug\AegisImplicitMail.pdb
-D:\AEGIS\AegisImplicitMail\AegisImplictMail\bin\Debug\AegisImplicitMail.tlb
-D:\AEGIS\AegisImplicitMail\AegisImplictMail\obj\Debug\AegisImplicitMail.dll
-D:\AEGIS\AegisImplicitMail\AegisImplictMail\obj\Debug\AegisImplicitMail.pdb
-D:\AEGIS\AegisImplicitMail\AegisImplictMail\obj\Debug\AegisImplicitMail.csprojResolveAssemblyReference.cache
-F:\Personal\Aim\Git\netimplicitssl-code\AegisImplictMail\bin\Debug\AegisImplicitMail.dll
-F:\Personal\Aim\Git\netimplicitssl-code\AegisImplictMail\obj\Debug\AegisImplicitMail.dll
