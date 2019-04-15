@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/nilnull/AIM.svg?branch=master)](https://travis-ci.org/nilnull/AIM)
+
 # Aegis Implicit Mail (AIM)
 Aegis Implicit Mail is a free and open source library which is designed to provide fast and developer friendly API to send emails using SMTP ports. 
 
