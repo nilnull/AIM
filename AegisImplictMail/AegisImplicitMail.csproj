@@ -57,10 +57,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="AegisImplictMail.licenseheader" />
+    <None Remove="AegisImplictMail.licenseheader" />
+    <None Remove="implicitMail.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="implicitMail.ico" />
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
