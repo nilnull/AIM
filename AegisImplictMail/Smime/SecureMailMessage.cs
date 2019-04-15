@@ -530,7 +530,7 @@ namespace net.scan.aegis.ace.SecureMail
 
             if (ReplyTo != null)
             {
-                returnValue.ReplyTo = ReplyTo;
+                returnValue.ReplyToList.Add(ReplyTo);
             }
 
 
