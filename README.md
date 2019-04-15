@@ -1,26 +1,13 @@
 # Aegis Implicit Mail (AIM)
 Aegis Implicit Mail is a free and open source library which is designed to provide fast and developer friendly API to send emails using SMTP ports. 
-Please check https://sourceforge.net/projects/netimplicitssl/ for archive
 
-#Features
-AIM Supports :
-* None Ssl Mails
-* Implicit Ssl Mails
-* Explicit Ssl Mails
-* Smtp Connection test
-* Detect Ssl type of mail server
-* Attachments for MIME and S/MIME message.
-* In-line attachment and separate file attachment
-* All content types and mimes
-* SMIME , Signed and Encrypted mails
-In an integrated way 
+
 
 # Why AIM
 Sadly, Microsoft.Net.Mail Ssl Mails does not support Implicit Ssl Mail and it is still used by many servers, including port 465 of Gmail here AIM comes to make a readable and fast alternative to send your smtp mails.
 
 ## Download
-Binaries are available in the form of NuGet package:
-https://www.nuget.org/packages/AIM
+Binaries are available in the form of [NuGet package](https://www.nuget.org/packages/AIM)
 
 Getting the Code
 ----------------
@@ -84,13 +71,14 @@ As you might be familiar with _System.Net.Mail_, we have four important objects 
 3. Attachment 
 4. sender
 
-For each mail you need to generate mail message, set addresses and attachments and then send it using a smtp sender. 
+For each mail you need to generate mail message, 
+1. Set addresses 
+2. Add attachments 
+3. Send it using a smtp sender
 
 AIM uses the same architecture. We have normal (mime) Mails and smime Mails that can be in a plain sender or Ssl Sender in addition Ssl Sender can be implicit and explicit.
 
-In Conclusion you can [Send Mime Mails to Implicit Ssl Smtp Mail Servers](Send Mime Mails to Implicit Ssl Smtp Mail Servers),[Send SMIME Mails to Implicit Ssl Smtp Mail Servers](Send SMIME Mails to Implicit Ssl Smtp Mail Servers), [Send Mime Mails to Smtp Mail Servers](Send Mime Mails to Smtp Mail Servers), [Send SMIME mails to smtp mail servers](Send SMIME mails to smtp mail servers), [Send Mime Mails to Explicit Ssl Smtp Mail Servers](Send Mime Mails to Explicit Ssl Smtp Mail Servers) and [Send SMIME Mails to Explicit Ssl Smtp Mail Servers](Send SMIME Mails to Explicit Ssl Smtp Mail Servers) using same an exact same logic.
-Another alternative is to use our mail factory class which is able to send all mentioned mails  
-
+More information can be found at our [wiki](https://sourceforge.net/p/netimplicitssl/wiki/Home/)
 
 # Features 
 * Support for both of Smime and Mime Messages
@@ -109,6 +97,8 @@ Another alternative is to use our mail factory class which is able to send all m
 * Support Office 365
 * Support display name
 
+# Archive
+Please check our archive [here](https://sourceforge.net/projects/netimplicitssl/) 
 
 
 # Development Team
