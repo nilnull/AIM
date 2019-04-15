@@ -12,9 +12,9 @@ Binaries are available in the form of [NuGet package](https://www.nuget.org/pack
 Getting the Code
 ----------------
 To get a local copy of the current code, clone it using git:
-'''
+```
 $ git clone https://github.com/nilnull/AIM.git
-''' 
+``` 
 
 Write the code!
 ---------------
