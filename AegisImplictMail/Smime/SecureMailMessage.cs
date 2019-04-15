@@ -6,6 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
 using net.scan.ace.SecureMail;
+using SslImplictMail.Smime;
 
 namespace net.scan.aegis.ace.SecureMail
 {

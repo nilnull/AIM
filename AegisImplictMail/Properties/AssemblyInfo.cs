@@ -8,9 +8,9 @@ using System.Resources;
 [assembly: AssemblyTitle("Aegis Implicit Mail")]
 [assembly: AssemblyDescription("Open Source implicit and explicit mime and smime mail library")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("AFD")]
+[assembly: AssemblyCompany("PKI.Tools")]
 [assembly: AssemblyProduct("AegisImplicitMail")]
-[assembly: AssemblyCopyright("Copyright © Araz Farhang Dareshuri  2014")]
+[assembly: AssemblyCopyright("Copyright © Araz Farhang Dareshuri  2019")]
 [assembly: AssemblyTrademark("AegisImplicitMail (AIM)")]
 [assembly: AssemblyCulture("")]
 
