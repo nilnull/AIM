@@ -66,7 +66,7 @@ namespace AegisImplicitMail
         }
 
 	    private const EncryptionPolicy EncryptionPolicy = System.Net.Security.EncryptionPolicy.AllowNoEncryption;
-	    private SslProtocols _sslProtocol = SslProtocols.Default | SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12 | SslProtocols.Tls13;;
+	    private SslProtocols _sslProtocol = SslProtocols.Default | SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12 | SslProtocols.Tls13;
 	
 	    private string _host;
 
