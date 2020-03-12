@@ -30,6 +30,7 @@ namespace AegisImplicitMail
     /// </summary>
     public class SmtpSocketClient : IDisposable
     {
+        private readonly object testConnectionLock = new object();
         const string AuthExtension = "AUTH";
         const string AuthNtlm = "NTLM";
 
@@ -220,7 +221,7 @@ namespace AegisImplicitMail
         /// <returns>Return true if your connection settings are correct , otherwise false</returns>
         public bool TestConnection()
         {
-            lock (this)
+            lock (testConnectionLock)
             {
                 if (string.IsNullOrWhiteSpace(_host))
                 {
