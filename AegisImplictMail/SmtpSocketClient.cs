@@ -31,6 +31,7 @@ namespace AegisImplicitMail
     public class SmtpSocketClient : IDisposable
     {
         private readonly object testConnectionLock = new object();
+        private readonly object sendMailLock = new object();
         const string AuthExtension = "AUTH";
         const string AuthNtlm = "NTLM";
 
@@ -699,7 +700,7 @@ namespace AegisImplicitMail
         public void SendMail(AbstractMailMessage message)
         {
             MailMessage = (MimeMailMessage) message;
-            lock (this)
+            lock (sendMailLock)
             {
                 if (string.IsNullOrWhiteSpace(_host))
                 {
