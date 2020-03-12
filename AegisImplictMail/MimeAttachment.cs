@@ -82,7 +82,6 @@ namespace AegisImplicitMail
         public MimeAttachment(string filename)
             : this(filename, new ContentType(MediaTypeNames.Application.Octet), AttachmentLocation.Attachmed)
         {
-            Location = Location;
         }
 
         /// <summary>

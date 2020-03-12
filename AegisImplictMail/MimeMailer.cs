@@ -180,9 +180,6 @@ namespace AegisImplicitMail
                 // Connecting to the server and configuring it
                 using (var client = new SmtpSocketClient())
                 {
-                    Host = Host;
-                    Port = Port;
-                    base.SslType = base.SslType;
                     if (String.IsNullOrEmpty(User))
                         AuthenticationMode = AuthenticationType.UseDefualtCridentials;
                 }
