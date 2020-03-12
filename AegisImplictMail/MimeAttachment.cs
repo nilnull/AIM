@@ -18,7 +18,7 @@ namespace AegisImplicitMail
         /// <summary>
         /// File to send.
         /// </summary>
-        public string FileName;
+        public string FileName { get; set; }
         /// <summary>
         /// Content type of file (application/octet-stream for regular attachments).
         /// </summary>
@@ -48,7 +48,7 @@ namespace AegisImplicitMail
             }
         }
 
-#endregion
+        #endregion
 
         #region Constructors
         /// <summary>

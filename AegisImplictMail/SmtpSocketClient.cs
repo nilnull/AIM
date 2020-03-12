@@ -863,7 +863,11 @@ namespace AegisImplicitMail
 
                     _con.SendCommand(SmtpCommands.Quit);
                     _con.GetReply(out response, out code);
+
+                    #if DEBUG
                     Console.WriteLine(response);
+                    #endif
+
                     _con.Close();
                     InCall = false;
 
