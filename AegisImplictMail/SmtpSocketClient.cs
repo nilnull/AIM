@@ -737,16 +737,11 @@ namespace AegisImplicitMail
                 //set up initial connection
                 if (EsablishSmtp())
                 {
+
                     string response;
                     int code;
                     var buf = new StringBuilder {Length = 0};
                     buf.Append(SmtpCommands.Mail);
-                    if (!string.IsNullOrEmpty(MailMessage.From.DisplayName))
-                    {
-                        buf.Append("\"");
-                        buf.Append(MailMessage.From.DisplayName);
-                        buf.Append("\" ");
-                    }
                     buf.Append("<");
                     buf.Append(MailMessage.From.Address);
                     buf.Append(">");                    
@@ -799,6 +794,7 @@ namespace AegisImplicitMail
                         buf.Length = 0;
                     }
                     buf.Length = 0;
+
                     //set headers
                     _con.SendCommand(SmtpCommands.Data);
                     _con.GetReply(out response,out code);
@@ -806,7 +802,7 @@ namespace AegisImplicitMail
                     _con.SendCommand("X-Mailer: AIM.MimeMailer");
                     DateTime today = DateTime.UtcNow;
                     buf.Append(SmtpCommands.Date);
-										buf.Append(today.ToString("r"));
+					buf.Append(today.ToString("r"));
                     _con.SendCommand(buf.ToString());
                     buf.Length = 0;
                     buf.Append(SmtpCommands.From);
