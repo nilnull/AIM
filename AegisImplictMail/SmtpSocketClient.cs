@@ -763,8 +763,7 @@ namespace AegisImplicitMail
                     {
                         buf.Append(SmtpCommands.Recipient);
                         buf.Append("<");
-
-                        buf.Append(recipient);
+                        buf.Append(recipient.Address);
                         buf.Append(">");
                         _con.SendCommand(buf.ToString());
                         _con.GetReply(out response, out code);
@@ -777,7 +776,7 @@ namespace AegisImplicitMail
                     {
                         buf.Append(SmtpCommands.Recipient);
                         buf.Append("<");
-                        buf.Append(recipient);
+                        buf.Append(recipient.Address);
                         buf.Append(">");
                         _con.SendCommand(buf.ToString());
                         _con.GetReply(out response, out code);
@@ -791,7 +790,7 @@ namespace AegisImplicitMail
                     {
                         buf.Append(SmtpCommands.Recipient);
                         buf.Append("<");
-                        buf.Append(o);
+                        buf.Append(o.Address);
                         buf.Append(">");
                         _con.SendCommand(buf.ToString());
                         _con.GetReply(out response, out code);
