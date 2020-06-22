@@ -737,6 +737,7 @@ namespace AegisImplicitMail
                 //set up initial connection
                 if (EsablishSmtp())
                 {
+
                     string response;
                     int code;
                     var buf = new StringBuilder {Length = 0};
