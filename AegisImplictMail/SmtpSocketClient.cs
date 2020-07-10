@@ -1088,10 +1088,12 @@ namespace AegisImplicitMail
 				_con.SendCommand(buf.ToString());								
 				buf.Length = 0;
 				int num = cs.Read(fbuf, 0, 2048);
-				while(num > 0)
+                char[] bufln = new char[2] { '\r', '\n' };
+                while (num > 0)
 				{					
 					_con.SendData(Encoding.ASCII.GetChars(fbuf, 0, num), 0, num);
-					num = cs.Read(fbuf, 0, 2048);
+                    _con.SendData(bufln, 0, 2);
+                    num = cs.Read(fbuf, 0, 2048);
 				}
 				cs.Close();
 				_con.SendCommand("");
