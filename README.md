@@ -15,7 +15,7 @@ Getting the Code
 ----------------
 To get a local copy of the current code, clone it using git:
 ```
-$ git clone https://github.com/nilnull/AIM.git
+$ git clone https://github.com/mwidev/AIM.git
 ``` 
 
 Write the code!
