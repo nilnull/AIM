@@ -2,6 +2,7 @@ language: csharp
 mono:
   - latest
 solution: AIM.sln
+dotnet: 3.0
 
 os:
   - linux
