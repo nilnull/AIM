@@ -1,5 +1,4 @@
 language: csharp
-sudo: required
 mono:
   - latest
 solution: AIM.sln
