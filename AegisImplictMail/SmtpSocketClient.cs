@@ -737,16 +737,11 @@ namespace AegisImplicitMail
                 //set up initial connection
                 if (EsablishSmtp())
                 {
+
                     string response;
                     int code;
                     var buf = new StringBuilder {Length = 0};
                     buf.Append(SmtpCommands.Mail);
-                    if (!string.IsNullOrEmpty(MailMessage.From.DisplayName))
-                    {
-                        buf.Append("\"");
-                        buf.Append(MailMessage.From.DisplayName);
-                        buf.Append("\" ");
-                    }
                     buf.Append("<");
                     buf.Append(MailMessage.From.Address);
                     buf.Append(">");                    
@@ -763,8 +758,7 @@ namespace AegisImplicitMail
                     {
                         buf.Append(SmtpCommands.Recipient);
                         buf.Append("<");
-
-                        buf.Append(recipient);
+                        buf.Append(recipient.Address);
                         buf.Append(">");
                         _con.SendCommand(buf.ToString());
                         _con.GetReply(out response, out code);
@@ -777,7 +771,7 @@ namespace AegisImplicitMail
                     {
                         buf.Append(SmtpCommands.Recipient);
                         buf.Append("<");
-                        buf.Append(recipient);
+                        buf.Append(recipient.Address);
                         buf.Append(">");
                         _con.SendCommand(buf.ToString());
                         _con.GetReply(out response, out code);
@@ -791,7 +785,7 @@ namespace AegisImplicitMail
                     {
                         buf.Append(SmtpCommands.Recipient);
                         buf.Append("<");
-                        buf.Append(o);
+                        buf.Append(o.Address);
                         buf.Append(">");
                         _con.SendCommand(buf.ToString());
                         _con.GetReply(out response, out code);
@@ -800,6 +794,7 @@ namespace AegisImplicitMail
                         buf.Length = 0;
                     }
                     buf.Length = 0;
+
                     //set headers
                     _con.SendCommand(SmtpCommands.Data);
                     _con.GetReply(out response,out code);
@@ -807,7 +802,7 @@ namespace AegisImplicitMail
                     _con.SendCommand("X-Mailer: AIM.MimeMailer");
                     DateTime today = DateTime.UtcNow;
                     buf.Append(SmtpCommands.Date);
-										buf.Append(today.ToString("r"));
+					buf.Append(today.ToString("r"));
                     _con.SendCommand(buf.ToString());
                     buf.Length = 0;
                     buf.Append(SmtpCommands.From);
@@ -846,13 +841,22 @@ namespace AegisImplicitMail
                         }
                         _con.SendCommand(buf.ToString());
                     }
-                    buf.Length = 0;
-                    buf.Append(SmtpCommands.ReplyTo);
-                    buf.Append(MailMessage.From);
-                    _con.SendCommand(buf.ToString());
+                    
+                    if (MailMessage.ReplyToList?.Count > 0)
+                    {
+                        foreach (MailAddress replyToAdr in MailMessage.ReplyToList)
+                        {
+                            buf.Length = 0;
+                            buf.Append(SmtpCommands.ReplyTo);
+                            buf.Append(replyToAdr);
+                            _con.SendCommand(buf.ToString());
+                        }
+                    }
+
                     buf.Length = 0;
                     buf.Append(SmtpCommands.Subject);
-                    buf.Append(GetEncodedSubject());
+                    String encodedSubject = GetEncodedSubject();
+                    buf.Append(encodedSubject);
                     _con.SendCommand(buf.ToString());
                     SendMessageBody(buf);
                     _con.GetReply(out response, out code);
@@ -1084,10 +1088,12 @@ namespace AegisImplicitMail
 				_con.SendCommand(buf.ToString());								
 				buf.Length = 0;
 				int num = cs.Read(fbuf, 0, 2048);
-				while(num > 0)
+                char[] bufln = new char[2] { '\r', '\n' };
+                while (num > 0)
 				{					
 					_con.SendData(Encoding.ASCII.GetChars(fbuf, 0, num), 0, num);
-					num = cs.Read(fbuf, 0, 2048);
+                    _con.SendData(bufln, 0, 2);
+                    num = cs.Read(fbuf, 0, 2048);
 				}
 				cs.Close();
 				_con.SendCommand("");
@@ -1105,7 +1111,7 @@ namespace AegisImplicitMail
             else
             {
                 var encodingName = subjectEncoding.BodyName.ToLower();
-                return "=?" + encodingName + "?B?" + TransferEncoder.ToBase64(subjectEncoding.GetBytes(MailMessage.Subject)) + "?=";
+                return "=?" + encodingName + "?B?" + TransferEncoder.ToBase64WithoutLinebrakes(subjectEncoding.GetBytes(MailMessage.Subject)) + "?=";
             }
         }
 
