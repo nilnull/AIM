@@ -1,4 +1,21 @@
 language: csharp
+sudo: required
 mono:
   - latest
 solution: AIM.sln
+
+os:
+  - linux
+
+jobs:
+  include:
+   - stage: compile
+     script: bash scripts/compile.sh
+
+   - stage: test
+     script: bash scripts/test.sh
+  
+   - stage: deploy-prod
+     if: branch = master AND type = push
+     name: "Deploying to NUGET"
+     script: bash scripts/push.sh
