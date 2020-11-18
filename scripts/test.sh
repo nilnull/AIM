@@ -2,6 +2,6 @@
 
 
 echo "Testing..."
-dotnet test "..\AIM.sln" -c Release -v n
+dotnet test ".\AIM.sln" -c Release -v n
 
 
