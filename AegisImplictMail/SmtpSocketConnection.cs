@@ -52,8 +52,7 @@ namespace AegisImplicitMail
 			_socket = new TcpClient();
 		}
 
-	    readonly RemoteCertificateValidationCallback _validationCallback =
-  ServerValidationCallback;
+	    readonly RemoteCertificateValidationCallback _validationCallback = ServerValidationCallback;
 
         private static bool ServerValidationCallback(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslpolicyerrors)
         {
@@ -61,15 +60,13 @@ namespace AegisImplicitMail
             return sslpolicyerrors == SslPolicyErrors.None;
         }
 
-     //   LocalCertificateSelectionCallback selectionCallback ;
-
         private X509Certificate ClientCertificateSelectionCallback(object sender, string targethost, X509CertificateCollection localcertificates, X509Certificate remotecertificate, string[] acceptableissuers)
         {
             return ClientCertificate2;
         }
 
 	    private const EncryptionPolicy EncryptionPolicy = System.Net.Security.EncryptionPolicy.AllowNoEncryption;
-	    private SslProtocols _sslProtocol = SslProtocols.Default;
+	    private SslProtocols _sslProtocol = SslProtocols.Default | SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12;
 	
 	    private string _host;
 
@@ -99,26 +96,19 @@ namespace AegisImplicitMail
 	        _socket.ReceiveTimeout = timeout;
 	        if (isSsl == SslMode.Ssl)
 	        {
+                var sslStream = new SslStream(_socket.GetStream(), true, _validationCallback, ClientCertificateSelectionCallback, EncryptionPolicy);
 
-	            if (clientcerts == null)
+                if (clientcerts == null)
 	            {
-
-	                var sslStream = new SslStream(_socket.GetStream(),
-	                    true, _validationCallback, ClientCertificateSelectionCallback, EncryptionPolicy);
-	                sslStream.AuthenticateAsClient(host);
-	                _writer = new StreamWriter(sslStream, Encoding.ASCII);
-	                _reader = new StreamReader(sslStream, Encoding.ASCII);
+	                sslStream.AuthenticateAsClient(host, null, _sslProtocol, CheckRevokation);
 	            }
 	            else
 	            {
-	              var  sslStream = new SslStream(_socket.GetStream(),
-	                    true, _validationCallback, ClientCertificateSelectionCallback, EncryptionPolicy);
 	                sslStream.AuthenticateAsClient(host, clientcerts, _sslProtocol, CheckRevokation);
-                    _writer = new StreamWriter(sslStream, Encoding.ASCII);
-                    _reader = new StreamReader(sslStream, Encoding.ASCII);
-                    
-	            }
-	            _connected = true;
+                }
+                _writer = new StreamWriter(sslStream, Encoding.ASCII);
+                _reader = new StreamReader(sslStream, Encoding.ASCII);
+                _connected = true;
 
 	        }
             else
@@ -220,24 +210,18 @@ namespace AegisImplicitMail
 
 	    internal void SwitchToSsl()
 	    {
+            var sslStream = new SslStream(_socket.GetStream(), true, _validationCallback, ClientCertificateSelectionCallback, EncryptionPolicy);
+
             if (clientcerts == null)
             {
-
-                var sslStream = new SslStream(_socket.GetStream(),
-                    true, _validationCallback, ClientCertificateSelectionCallback, EncryptionPolicy);
-                sslStream.AuthenticateAsClient(_host);
-                _writer = new StreamWriter(sslStream, Encoding.ASCII);
-                _reader = new StreamReader(sslStream, Encoding.ASCII);
+                sslStream.AuthenticateAsClient(_host, null, _sslProtocol, CheckRevokation);
             }
             else
             {
-               var sslStream = new SslStream(_socket.GetStream(),
-                    true, _validationCallback, ClientCertificateSelectionCallback, EncryptionPolicy);
                 sslStream.AuthenticateAsClient(_host, clientcerts, _sslProtocol, CheckRevokation);
-                _writer = new StreamWriter(sslStream, Encoding.ASCII);
-                _reader = new StreamReader(sslStream, Encoding.ASCII);
-
             }
+            _writer = new StreamWriter(sslStream, Encoding.ASCII);
+            _reader = new StreamReader(sslStream, Encoding.ASCII);
 	   
 	    }
 	}

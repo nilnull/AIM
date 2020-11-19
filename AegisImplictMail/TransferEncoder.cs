@@ -121,6 +121,16 @@ namespace AegisImplicitMail
         }
 
         /// <summary>
+        /// Converts a message to Base64.
+        /// </summary>
+        /// <param name="bytes">A byte array to convert.</param>
+        /// <returns>A string containing the converted byte array.</returns>
+        public static string ToBase64WithoutLinebrakes(byte[] bytes)
+        {
+            return Convert.ToBase64String(bytes, Base64FormattingOptions.None);
+        }
+
+        /// <summary>
         /// Converts a message to quoted-printable.
         /// </summary>
         /// <param name="bytes">A byte array to convert.</param>

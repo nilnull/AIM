@@ -3,6 +3,20 @@
  
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>AIM</PackageId>
+    <PackageVersion>1.1.0</PackageVersion>
+    <Authors>Araz Farhang Dareshuri</Authors>
+    <Copyright>Copyright (c) 2020 Araz Farhang Dareshuri
+
+</Copyright>
+    <PackageIconUrl>https://raw.githubusercontent.com/nilnull/AIM/master/AegisImplictMail/implicitMail.ico</PackageIconUrl>
+    <PackageLicenseUrl>http://www.gnu.org/licenses/gpl-2.0.html</PackageLicenseUrl>
+    <Owners>PKI.Tools</Owners>
+    <PackageProjectUrl>https://github.com/nilnull/AIM</PackageProjectUrl>
+    <Summary>Aegis Implicit Mail is a free and open source library which is designed to provide fast and developer friendly API to send emails using SMTP ports.</Summary>
+    <PackageTags>AIM, SSL mail , AegisImplicitMail, SMTP, Implicit Mail, Server, Explicit Mail , Ss,l TLS , email, send, mime, smime, S/mime</PackageTags>
+    <Title>Aegis Implicit Mail</Title>
+    <Description>Aegis Implicit Mail is a free and open source library which is designed to provide fast and developer friendly API to send emails using SMTP ports.</Description>
   </PropertyGroup>
   <PropertyGroup>
     <OutputType>Library</OutputType>

@@ -2,3 +2,17 @@ language: csharp
 mono:
   - latest
 solution: AIM.sln
+dotnet: 3.0
+
+os:
+  - linux
+
+jobs:
+  include:
+   - stage: compile
+     script: bash scripts/compile.sh
+  
+   - stage: deploy-prod
+     if: branch = master AND type = push
+     name: "Deploying to NUGET"
+     script: bash scripts/push.sh
