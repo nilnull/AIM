@@ -57,7 +57,7 @@ namespace AegisImplicitMail
         private static bool ServerValidationCallback(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslpolicyerrors)
         {
             Console.Out.WriteLine("Validation Callback " + certificate + " ||| " + sslpolicyerrors);
-            return true;
+            return sslpolicyerrors == SslPolicyErrors.None;
         }
 
         private X509Certificate ClientCertificateSelectionCallback(object sender, string targethost, X509CertificateCollection localcertificates, X509Certificate remotecertificate, string[] acceptableissuers)
