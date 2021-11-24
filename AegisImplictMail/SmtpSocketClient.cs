@@ -1088,7 +1088,7 @@ namespace AegisImplicitMail
 				_con.SendCommand(buf.ToString());
 				buf.Length = 0;
 				buf.Append("Content-ID: ");
-                var escapedContentId = !string.IsNullOrEmpty(attachment.ContentId) ? attachment.ContentId : Path.GetFileNameWithoutExtension(fileName).Replace(" ", "-");
+                var escapedContentId = "<" + (!string.IsNullOrEmpty(attachment.ContentId) ? attachment.ContentId : Path.GetFileNameWithoutExtension(fileName).Replace(" ", "-")) + ">";
                 buf.Append(escapedContentId);
 				buf.Append("\r\n");
 				_con.SendCommand(buf.ToString());								
