@@ -66,9 +66,9 @@ namespace AegisImplicitMail
 
 
         /// <summary>
-        ///     Generate a random boundry for mail message
+        ///     Generate a random boundary for mail message
         /// </summary>
-        /// <returns>A GUID based Boundry</returns>
+        /// <returns>A GUID based Boundary</returns>
         internal static string GenerateBoundary()
         {
             return "--CPI=_" + Guid.NewGuid();
@@ -79,7 +79,7 @@ namespace AegisImplicitMail
         ///     Read an <see cref="System.Net.Mail.Attachment" />Attachment and return the value of it in byte arrays.
         /// </summary>
         /// <param name="attachment">Attachment</param>
-        /// <returns>byte array of attachment which is mainly used in encyption of it</returns>
+        /// <returns>byte array of attachment which is mainly used in encryption of it</returns>
         public static byte[] ReadAttachment(Attachment attachment)
         {
             var reader = new BinaryReader(attachment.ContentStream);
@@ -96,7 +96,7 @@ namespace AegisImplicitMail
         /// <summary>
         ///     No authentication is used.
         /// </summary>
-        UseDefualtCridentials = -1,
+        UseDefaultCredentials = -1,
 
         /// <summary>
         ///     Base64 authentication is used.

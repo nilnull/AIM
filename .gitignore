@@ -252,3 +252,5 @@ paket-files/
 .idea/
 *.sln.iml
 /obj
+.vscode/launch.json
+.vscode/tasks.json

@@ -40,16 +40,20 @@ namespace AegisImplicitMail
         Tls = 1,
 
         /// <summary>
-        /// todo:Authomaticaly detect type of ssl
+        /// todo:Automatically detect type of ssl
         /// </summary>
         Auto =2
     }
+
     /// <summary>
     /// Generate Mime Messages
     /// </summary>
     public class MimeMailer :SmtpSocketClient, IMailer 
     {
 
+        /// <summary>
+        /// Provides credentials for password-based authentication schemes such as basic, digest, NTLM, and Kerberos authentication.
+        /// </summary>
         public NetworkCredential Credentials
         {
             get
@@ -124,15 +128,26 @@ namespace AegisImplicitMail
             AuthenticationMode = authenticationType;
         }
 
+        /// <summary>
+        /// Construct an emailer object to send mime mail
+        /// </summary>
+        /// <param name="host">Host address of mailing server</param>
         public MimeMailer(string host):base(host)
         {
             
         }
-
+        /// <summary>
+        /// Construct an emailer object to send mime mail
+        /// </summary>
+        /// <param name="host">Host address of mailing server</param>
+        /// <param name="port">Port number of server</param>
         public MimeMailer(string host, int port):base(host,port)
         {
         }
 
+        /// <summary>
+        /// Construct an emailer object to send mime mail
+        /// </summary>
         public MimeMailer():base()
         {
         }
@@ -181,13 +196,20 @@ namespace AegisImplicitMail
                 using (var client = new SmtpSocketClient())
                 {
                     if (String.IsNullOrEmpty(User))
-                        AuthenticationMode = AuthenticationType.UseDefualtCridentials;
+                        AuthenticationMode = AuthenticationType.UseDefaultCredentials;
                 }
             
 
         }
 
-        public void Send(string from, string recipiant, string subject, string body)
+        /// <summary>
+        /// Send message to the server
+        /// </summary>
+        /// <param name="from">Sender address</param>
+        /// <param name="recipient">receiver email address</param>
+        /// <param name="subject">email subject</param>
+        /// <param name="body">message content</param>
+        public void Send(string from, string recipient, string subject, string body)
         {
            var allowUnicode = this.IsUnicodeSupported();
             var mailMessage = new MimeMailMessage
@@ -197,7 +219,7 @@ namespace AegisImplicitMail
            Body = body
             
             };
-            mailMessage.To.Add(new MimeMailAddress(recipiant));
+            mailMessage.To.Add(new MimeMailAddress(recipient));
             Send(mailMessage);
 
         }

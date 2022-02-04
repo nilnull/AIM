@@ -10,7 +10,7 @@
  *
  * If you need any more details please contact <a.farhang.d@gmail.com>
  * 
- * Aegis Implicit Mail is an implict ssl package to use mine/smime messages on implict ssl servers
+ * Aegis Implicit Mail is an implicit ssl package to use mine/smime messages on implicit ssl servers
  */
 
 using System;
@@ -96,7 +96,7 @@ namespace AegisImplicitMail
 
         private readonly bool _useHtml;
 
-        public void SendImplicitMail(List<MailAddress> recieverMailAddresses, MailPriority messagePriority, string messageSubject, string messageBody, List<string> attachmentAddress = null, List<MailAddress> ccMailAddresses = null, List<MailAddress> bccMailAddresses = null)
+        public void SendImplicitMail(List<MailAddress> receiverMailAddresses, MailPriority messagePriority, string messageSubject, string messageBody, List<string> attachmentAddress = null, List<MailAddress> ccMailAddresses = null, List<MailAddress> bccMailAddresses = null)
         {
             var msg = new MimeMailMessage
             {
@@ -105,7 +105,7 @@ namespace AegisImplicitMail
                 Body = messageBody,
                 IsBodyHtml = _useHtml
             };
-            recieverMailAddresses.ForEach(a => msg.To.Add(a));
+            receiverMailAddresses.ForEach(a => msg.To.Add(a));
             if (ccMailAddresses != null) ccMailAddresses.ForEach(a => msg.To.Add(a));
             if (bccMailAddresses != null) bccMailAddresses.ForEach(a => msg.To.Add(a));
 
@@ -118,7 +118,7 @@ namespace AegisImplicitMail
    
         }
 
-        public void SendMail(List<MailAddress> recieverMailAddresses, MailPriority messagePriority, string messageSubject, string messageBody, List<string> attachmentAddress = null, SendCompletedEventHandler onSendCallBack = null, List<MailAddress> ccMailAddresses = null, List<MailAddress> bccMailAddresses = null)
+        public void SendMail(List<MailAddress> receiverMailAddresses, MailPriority messagePriority, string messageSubject, string messageBody, List<string> attachmentAddress = null, SendCompletedEventHandler onSendCallBack = null, List<MailAddress> ccMailAddresses = null, List<MailAddress> bccMailAddresses = null)
         {
             var msg = new MimeMailMessage {From = new MimeMailAddress(_senderEmailAddresss, _senderDisplayName)};
 
@@ -131,7 +131,7 @@ namespace AegisImplicitMail
 
             // To addresses
 
-            recieverMailAddresses.ForEach(a => msg.To.Add(a));
+            receiverMailAddresses.ForEach(a => msg.To.Add(a));
             if (ccMailAddresses != null) ccMailAddresses.ForEach(a => msg.To.Add(a));
             if (bccMailAddresses != null) bccMailAddresses.ForEach(a => msg.To.Add(a));
 
@@ -179,7 +179,7 @@ namespace AegisImplicitMail
                 client.Port = _port;
                 ((SmtpSocketClient) client).SslType = _ssl;
                 if (String.IsNullOrEmpty(_userName))
-                    client.AuthenticationMode = AuthenticationType.UseDefualtCridentials;
+                    client.AuthenticationMode = AuthenticationType.UseDefaultCredentials;
                 else
                 {
            

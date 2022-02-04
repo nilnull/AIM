@@ -83,11 +83,11 @@ AIM uses the same architecture. We have normal (mime) Mails and smime Mails that
 More information can be found at our [wiki](https://sourceforge.net/p/netimplicitssl/wiki/Home/)
 
 # Features 
-* Support for both of Smime and Mime Messages
+* Support for both of S-MIME and Mime Messages
 * Easy to use and well designed, easy to migrate from System.Net.Mail
 * Support for Signed and/or encrypted mail
 * Supports Ssl Type detection (Detects if Mail server is using Implicit (SSL) or Explicit (TLS) smtp)
-* Support Base64, PlainText and default credential Athentication
+* Support Base64, PlainText and default credential Authentication
 * Asynchronous Mail Sending
 * Support None Ssl Mails
 * Support Inline and Attached Attachments.

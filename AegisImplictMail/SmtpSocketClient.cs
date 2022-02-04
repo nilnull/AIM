@@ -1,14 +1,14 @@
 /*
  * Copyright (C)2014 Araz Farhang Dareshuri
- * This file is a part of Aegis Implict Ssl Mailer (AIM)
- * Aegis Implict Ssl Mailer is free software: 
+ * This file is a part of Aegis Implicit Ssl Mailer (AIM)
+ * Aegis Implicit Ssl Mailer is free software: 
  * you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  * See the GNU General Public License for more details.
  * You should have received a copy of the GNU General Public License along with this program.  
  * If not, see <http://www.gnu.org/licenses/>.
  * If you need any more details please contact <a.farhang.d@gmail.com>
- * Aegis Implict Ssl Mailer is an implict ssl package to use mine/smime messages on implict ssl servers
+ * Aegis Implicitt Ssl Mailer is an implicit ssl package to use mine/smime messages on implict ssl servers
  */
 using System;
 using System.Collections.ObjectModel;
@@ -35,30 +35,33 @@ namespace AegisImplicitMail
         const string AuthExtension = "AUTH";
         const string AuthNtlm = "NTLM";
 
+        const int bufLen = 998; // to comply with RFC 5322 2.1.1. Line Length Limits
         private const string Gap = " ";
         const string AuthGssapi = "gssapi";
         const string AuthWDigest = "wdigest";
 
         /// <summary>
-        /// Sets the transaction time out by defualt it is 100,000  (100 secconds)
+        /// Sets the transaction time out by default it is 200,000  (200 seconds)
         /// </summary>
-        public int Timeout {
+        public int Timeout
+        {
             get { return _timeout; }
-            set { _timeout = value; } }
+            set { _timeout = value; }
+        }
         #region variables
-		/// <summary>
-		/// Delegate for mail sent notification.
-		/// </summary>
+        /// <summary>
+        /// Delegate for mail sent notification.
+        /// </summary>
 
 
-		/// <summary>
-		/// The delegate function which is called after mail has been sent.
-		/// </summary>
-		public event SendCompletedEventHandler SendCompleted;
+        /// <summary>
+        /// The delegate function which is called after mail has been sent.
+        /// </summary>
+        public event SendCompletedEventHandler SendCompleted;
         private SmtpSocketConnection _con;
         private int _port;
-        private int _timeout = 100000;
-        private AuthenticationType _authMode = AuthenticationType.UseDefualtCridentials;
+        private int _timeout = 200000;
+        private AuthenticationType _authMode = AuthenticationType.UseDefaultCredentials;
         private string _user;
         private string _password;
         private MimeMailMessage _mailMessage;
@@ -85,64 +88,84 @@ namespace AegisImplicitMail
 		/// Port number of server server.
 		/// </summary>
 		public int Port
-		{
-			get {return _port;}
-			set 
-			{
-				if(value <= 0)
-				{
-					throw new ArgumentException("Invalid port.");
-				}
-				_port = value;
-			}
-		}
+        {
+            get { return _port; }
+            set
+            {
+                if (value <= 0)
+                {
+                    throw new ArgumentException("Invalid port.");
+                }
+                _port = value;
+            }
+        }
 
-      
-    /// <summary>
-    /// Method used for authentication.
-    /// </summary>
-    public AuthenticationType AuthenticationMode
-    {
-      get {return _authMode;}
-      set {_authMode = value;}
-    }
 
-    /// <summary>
-    /// User ID for authentication.
-    /// </summary>
-    public string User
-    {
-      get {return _user;}
-      set {_user = value;}
-    }
+        /// <summary>
+        /// Authentication type , you can have no authentication, plain or base64
+        /// Username and password will be encoded to base64 if the mode is set as base64
+        /// </summary>
+        public AuthenticationType AuthenticationMode
+        {
+            get { return _authMode; }
+            set { _authMode = value; }
+        }
 
-    /// <summary>
-    /// Password for authentication.
-    /// </summary>
-    public string Password
-    {
-      get {return _password;}
-      set {_password = value;}
-    }
+        /// <summary>
+        /// User ID for authentication.
+        /// </summary>
+        public string User
+        {
+            get { return _user; }
+            set { _user = value; }
+        }
 
+        /// <summary>
+        /// Password for authentication.
+        /// </summary>
+        public string Password
+        {
+            get { return _password; }
+            set { _password = value; }
+        }
+
+        /// <summary>
+        /// Email contents and attachments
+        /// </summary>
         public MimeMailMessage MailMessage
         {
             get { return _mailMessage; }
             set { _mailMessage = value; }
         }
 
+        /// <summary>
+        /// Authentication protocol 
+        /// </summary>
+        /// <value>for more information: <see cref="AegisImplicitMail.SslMode" /></value>
         public SslMode SslType { get; set; }
 
-        public bool DsnEnabled {get; private set; }
+        /// <summary>
+        /// Delivery Status Notification (DSN)
+        /// </summary>
+        /// <value>True if DNS is supported</value>
+        public bool DsnEnabled { get; private set; }
 
-        public bool ServerSupportsEai {get; private set; }
+        /// <summary>
+        /// Internationalized Email Addresses (Internet-Draft, 2007)
+        /// </summary>
+        /// <value>True if EAI is supported</value>
+        public bool ServerSupportsEai { get; private set; }
 
-        public bool SupportsTls {get; private set; }
-   
+        /// <summary>
+        /// Supporting of TLS protocol
+        /// </summary>
+        /// <value>true if TLS is supported</value>
+        public bool SupportsTls { get; private set; }
+
 
         #endregion
 
-        #region cunstructor
+        #region constructor
 
         /// <summary>
         /// Generate a smtp socket client object
@@ -160,12 +183,12 @@ namespace AegisImplicitMail
         public SmtpSocketClient(string host, int port = 465, string username = null, string password = null, AuthenticationType authenticationMode = AuthenticationType.Base64, MimeMailMessage msg = null, SendCompletedEventHandler onMailSend = null, SslMode sslType = SslMode.None)
             : this(msg)
         {
-            if ((AuthenticationMode != AuthenticationType.UseDefualtCridentials) &&
+            if ((AuthenticationMode != AuthenticationType.UseDefaultCredentials) &&
                 (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password)))
             {
                 throw new ArgumentNullException("username");
             }
-            
+
             _host = host;
             _port = port;
             _user = username;
@@ -177,24 +200,33 @@ namespace AegisImplicitMail
 
         }
 
+        /// <summary>
+        /// Create a smtp socket client
+        /// </summary>
+        /// <param name="msg">Message to be sent</param>
+        /// <param name="sslType">Authentication type</param>
         public SmtpSocketClient(MimeMailMessage msg = null, SslMode sslType = SslMode.None)
         {
-		    if (msg == null)
-		    {
-		        msg = new MimeMailMessage();
-		    }
+            if (msg == null)
+            {
+                msg = new MimeMailMessage();
+            }
             _mailMessage = msg;
             SslType = sslType;
         }
 
-#endregion
+        #endregion
 
 
+
+        /// <summary>
+        /// Check and return the supported protocol
+        /// </summary>
+        /// <returns>Supported protocol <see cref="AegisImplicitMail.SslMode" /></returns>
         public SslMode DetectSslMode()
         {
             using (new MimeMailer(Host, Port, User, Password))
             {
-                Timeout = 200000;
                 SslType = SslMode.Auto;
                 if (TestConnection())
                 {
@@ -228,18 +260,18 @@ namespace AegisImplicitMail
                 {
                     throw new ArgumentException("There wasn't any host address found for the mail.");
                 }
-                if (_authMode != AuthenticationType.UseDefualtCridentials)
+                if (_authMode != AuthenticationType.UseDefaultCredentials)
                 {
                     if (string.IsNullOrWhiteSpace(_user))
                     {
                         throw new ArgumentException(
-                            "You must specify user name when you are not using defualt credentials");
+                            "You must specify user name when you are not using default credentials");
                     }
 
                     if (string.IsNullOrWhiteSpace(_password))
                     {
                         throw new ArgumentException(
-                            "You must specify password when you are not using defualt credentials");
+                            "You must specify password when you are not using default credentials");
                     }
                 }
 
@@ -250,21 +282,21 @@ namespace AegisImplicitMail
 
                 InCall = true;
                 //set up initial connection
-                var result =  EsablishSmtp();
+                var result = EstablishSmtp();
                 string response;
                 int code;
-                if (_con!=null)
-                QuiteConnection(out response, out code);
+                if (_con != null)
+                    QuiteConnection(out response, out code);
                 return result;
             }
         }
 
 
-   
 
-        private bool EsablishSmtp()
+
+        private bool EstablishSmtp()
         {
-            
+
             _con = new SmtpSocketConnection();
             if (ClientCertificates != null)
             {
@@ -277,7 +309,7 @@ namespace AegisImplicitMail
             }
             try
             {
-                _con.Open(_host, _port, SslType, Timeout);
+                _con.Open(_host, _port, SslType, _timeout);
             }
             catch (Exception err)
             {
@@ -300,7 +332,7 @@ namespace AegisImplicitMail
 
             if (!ParseGreeting(code, response)) return false;
             var buf = new StringBuilder();
-            if (_authMode == AuthenticationType.UseDefualtCridentials)
+            if (_authMode == AuthenticationType.UseDefaultCredentials)
             {
                 buf.Append(SmtpCommands.Hello);
                 buf.Append(_host);
@@ -319,7 +351,7 @@ namespace AegisImplicitMail
 
                 //Handle Errors
                 if (!ParseEHello(code, response)) return false;
-  
+
                 var lines = response.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
                 ParseExtensions(lines);
 
@@ -342,11 +374,11 @@ namespace AegisImplicitMail
                         return false;
                     }
                 }
-               
+
                 switch (_authMode)
                 {
                     case AuthenticationType.Base64:
-                   
+
                         if (!AuthenticateAsBase64(out response, out code))
                         {
                             if (code == (int)SmtpResponseCodes.SyntaxError)
@@ -367,7 +399,7 @@ namespace AegisImplicitMail
                                             new ServerException("SMTP client authenticates but the username or password is incorrect"), true, response));
                                 }
                             }
-                             else if (code == (int)SmtpResponseCodes.Error)
+                            else if (code == (int)SmtpResponseCodes.Error)
                             {
                                 if (SendCompleted != null)
                                 {
@@ -383,7 +415,7 @@ namespace AegisImplicitMail
                                 {
                                     SendCompleted(this,
                                         new AsyncCompletedEventArgs(
-                                            new ServerException("Authenticiation Failed"), true, response));
+                                            new ServerException("Authentication Failed"), true, response));
                                 }
                             }
                             QuiteConnection(out response, out code);
@@ -431,7 +463,7 @@ namespace AegisImplicitMail
                                 {
                                     SendCompleted(this,
                                         new AsyncCompletedEventArgs(
-                                            new ServerException("Authenticiation Failed"), true, response));
+                                            new ServerException("Authentication Failed"), true, response));
                                 }
                             }
                             QuiteConnection(out response, out code);
@@ -440,7 +472,7 @@ namespace AegisImplicitMail
                         break;
                 }
             }
-    
+
             return true;
         }
 
@@ -545,7 +577,7 @@ namespace AegisImplicitMail
 
         private bool ParseStartTls(int code, string response)
         {
-            if (code != (int) SmtpResponseCodes.Ready && code != (int) SmtpResponseCodes.RequestCompleted)
+            if (code != (int)SmtpResponseCodes.Ready && code != (int)SmtpResponseCodes.RequestCompleted)
             {
                 if (SendCompleted != null)
                 {
@@ -559,22 +591,22 @@ namespace AegisImplicitMail
 
         private bool ParseEHello(int code, string response)
         {
-            if (code == (int) SmtpResponseCodes.RequestCompleted) return true;
+            if (code == (int)SmtpResponseCodes.RequestCompleted) return true;
             switch (code)
             {
-                case (int) SmtpResponseCodes.ServiceNotAvailable:
+                case (int)SmtpResponseCodes.ServiceNotAvailable:
                     _errormsg = "Service not available, closing transmission channel";
                     break;
-                case (int) SmtpResponseCodes.NotImplemented:
+                case (int)SmtpResponseCodes.NotImplemented:
                     _errormsg = "Not Implemented";
                     break;
-                case (int) SmtpResponseCodes.CommandParameterNotImplemented:
+                case (int)SmtpResponseCodes.CommandParameterNotImplemented:
                     _errormsg = "Command parameter not implemented";
                     break;
-                case (int) SmtpResponseCodes.SyntaxError:
+                case (int)SmtpResponseCodes.SyntaxError:
                     _errormsg = "Syntax error in parameters or arguments";
                     break;
-                case (int) SmtpResponseCodes.Error:
+                case (int)SmtpResponseCodes.Error:
                     _errormsg = "Syntax error, command unrecognised";
                     break;
                 default:
@@ -591,22 +623,22 @@ namespace AegisImplicitMail
 
         private bool ParseHello(int code, string response)
         {
-            if (code == (int) SmtpResponseCodes.RequestCompleted) return true;
+            if (code == (int)SmtpResponseCodes.RequestCompleted) return true;
             switch (code)
             {
-                case (int) SmtpResponseCodes.ServiceNotAvailable:
+                case (int)SmtpResponseCodes.ServiceNotAvailable:
                     _errormsg = "Service not available, closing transmission channel";
                     break;
-                case (int) SmtpResponseCodes.MailNotAccepted:
+                case (int)SmtpResponseCodes.MailNotAccepted:
                     _errormsg = "does not accept mail [rfc1846]";
                     break;
-                case (int) SmtpResponseCodes.CommandParameterNotImplemented:
+                case (int)SmtpResponseCodes.CommandParameterNotImplemented:
                     _errormsg = "Command parameter not implemented";
                     break;
-                case (int) SmtpResponseCodes.SyntaxError:
+                case (int)SmtpResponseCodes.SyntaxError:
                     _errormsg = "Syntax error in parameters or arguments";
                     break;
-                case (int) SmtpResponseCodes.Error:
+                case (int)SmtpResponseCodes.Error:
                     _errormsg = "Syntax error, command unrecognised";
                     break;
                 default:
@@ -623,11 +655,11 @@ namespace AegisImplicitMail
 
         private bool ParseGreeting(int code, string response)
         {
-            if (code == (int) SmtpResponseCodes.Ready) return true;
+            if (code == (int)SmtpResponseCodes.Ready) return true;
             //There is something wrong
             switch (code)
             {
-                case (int) SmtpResponseCodes.ServiceNotAvailable:
+                case (int)SmtpResponseCodes.ServiceNotAvailable:
                     _errormsg = "Service not available, closing transmission channel";
                     break;
                 default:
@@ -690,7 +722,7 @@ namespace AegisImplicitMail
             return false;
         }
 
-#endregion
+        #endregion
 
         #region MessageSenders
 
@@ -699,14 +731,14 @@ namespace AegisImplicitMail
         /// </summary>
         public void SendMail(AbstractMailMessage message)
         {
-            MailMessage = (MimeMailMessage) message;
+            MailMessage = (MimeMailMessage)message;
             lock (sendMailLock)
             {
                 if (string.IsNullOrWhiteSpace(_host))
                 {
                     throw new ArgumentException("There wasn't any host address found for the mail.");
                 }
-                if (_authMode != AuthenticationType.UseDefualtCridentials)
+                if (_authMode != AuthenticationType.UseDefaultCredentials)
                 {
                     if (string.IsNullOrWhiteSpace(_user))
                     {
@@ -737,21 +769,21 @@ namespace AegisImplicitMail
 
                 InCall = true;
                 //set up initial connection
-                if (EsablishSmtp())
+                if (EstablishSmtp())
                 {
 
                     string response;
                     int code;
-                    var buf = new StringBuilder {Length = 0};
+                    var buf = new StringBuilder { Length = 0 };
                     buf.Append(SmtpCommands.Mail);
                     buf.Append("<");
                     buf.Append(MailMessage.From.Address);
-                    buf.Append(">");                    
-                   
+                    buf.Append(">");
+
                     _con.SendCommand(buf.ToString());
                     _con.GetReply(out response, out code);
                     if (!ParseMail(code, response)) return;
-                 
+
                     Console.Out.WriteLine("From Response :" + response);
 
                     buf.Length = 0;
@@ -799,12 +831,12 @@ namespace AegisImplicitMail
 
                     //set headers
                     _con.SendCommand(SmtpCommands.Data);
-                    _con.GetReply(out response,out code);
+                    _con.GetReply(out response, out code);
                     if (!ParseData(code, response)) return;
                     _con.SendCommand("X-Mailer: AIM.MimeMailer");
                     DateTime today = DateTime.UtcNow;
                     buf.Append(SmtpCommands.Date);
-					buf.Append(today.ToString("r"));
+                    buf.Append(today.ToString("r"));
                     _con.SendCommand(buf.ToString());
                     buf.Length = 0;
                     buf.Append(SmtpCommands.From);
@@ -843,7 +875,7 @@ namespace AegisImplicitMail
                         }
                         _con.SendCommand(buf.ToString());
                     }
-                    
+
                     if (MailMessage.ReplyToList?.Count > 0)
                     {
                         foreach (MailAddress replyToAdr in MailMessage.ReplyToList)
@@ -868,9 +900,9 @@ namespace AegisImplicitMail
                     _con.SendCommand(SmtpCommands.Quit);
                     _con.GetReply(out response, out code);
 
-                    #if DEBUG
+#if DEBUG
                     Console.WriteLine(response);
-                    #endif
+#endif
 
                     _con.Close();
                     InCall = false;
@@ -885,13 +917,13 @@ namespace AegisImplicitMail
 
         private void SendMessageBody(StringBuilder buf)
         {
-            var encodingString = TransferEncoder.GetContentTypeName( MailMessage.BodyEncoding);
+            var encodingString = TransferEncoder.GetContentTypeName(MailMessage.BodyEncoding);
             //Console.WriteLine(encodingString);
             //var encodingString = "iso-8859-1";
             //var encodingString = "utf-8";
             var encodingHtmlHeader = "Content-Type: text/html; charset=" + encodingString;
             var encodingPlainHeader = "Content-Type: text/plain; charset=" + encodingString;
-            var encodingQuotedPrintable = MailMessage.BodyEncoding.Equals(Encoding.ASCII)? "Content-Transfer-Encoding: quoted-printable\r\n":
+            var encodingQuotedPrintable = MailMessage.BodyEncoding.Equals(Encoding.ASCII) ? "Content-Transfer-Encoding: quoted-printable\r\n" :
                 "Content-Transfer-Encoding: base64\r\n";
 
             buf.Length = 0;
@@ -915,14 +947,14 @@ namespace AegisImplicitMail
                 _con.SendCommand(encodingQuotedPrintable);
                 _con.SendCommand("--#SEPERATOR3#");
 
-          //      _con.SendCommand("Content-Type: text/html; charset=iso-8859-1");
+                //      _con.SendCommand("Content-Type: text/html; charset=iso-8859-1");
                 _con.SendCommand(encodingHtmlHeader);
                 _con.SendCommand(encodingQuotedPrintable);
                 _con.SendCommand(GetEncodedBody());
                 _con.SendCommand("--#SEPERATOR3#");
-             //   _con.SendCommand("Content-Type: text/plain; charset=iso-8859-1");
+                //   _con.SendCommand("Content-Type: text/plain; charset=iso-8859-1");
                 _con.SendCommand(encodingPlainHeader);
-             
+
                 _con.SendCommand(
                     "\r\nIf you can see this, then your email client does not support MHTML messages.");
                 _con.SendCommand("--#SEPERATOR3#--\r\n");
@@ -935,15 +967,15 @@ namespace AegisImplicitMail
                 {
                     _con.SendCommand(encodingHtmlHeader);
                     _con.SendCommand(encodingQuotedPrintable);
-               //     _con.SendCommand(" BODY=8BITMIME SMTPUTF8\r\n");
-           
-                   
+                    //     _con.SendCommand(" BODY=8BITMIME SMTPUTF8\r\n");
+
+
                 }
                 else
                 {
                     _con.SendCommand(encodingPlainHeader);
                     _con.SendCommand(encodingQuotedPrintable);
-                 //   _con.SendCommand(" BODY=8BITMIME SMTPUTF8\r\n");
+                    //   _con.SendCommand(" BODY=8BITMIME SMTPUTF8\r\n");
                 }
                 //_con.SendCommand(MailMessage.Body);
                 _con.SendCommand(GetEncodedBody());
@@ -987,7 +1019,7 @@ namespace AegisImplicitMail
             if (code == (int)SmtpResponseCodes.AuthenticationSuccessfull)
                 return true;
             return false;
-        
+
         }
 
         private bool AuthenticateAsBase64(out string response, out int code)
@@ -1031,34 +1063,34 @@ namespace AegisImplicitMail
         }
 
         /// <summary>
-		/// Send the message on a seperate thread.
+		/// Synchronous message sending on a separate thread .
 		/// </summary>
 		public void SendMailAsync(AbstractMailMessage message = null)
-		{
-		    if (message == null)
-		        message = MailMessage;
-			new Thread(()=> SendMail(message)).Start();
-		}
+        {
+            if (message == null)
+                message = MailMessage;
+            new Thread(() => SendMail(message)).Start();
+        }
 
-		/// <summary>
-		/// Send any attachments.
-		/// </summary>
-		/// <param name="buf">String work area.</param>
-		/// <param name="type">Attachment type to send.</param>
-		private void SendAttachments(StringBuilder buf, AttachmentLocation type)
-		{
-            
-			//declare mime info for attachment
-			var fbuf = new byte[2048];
-		    string seperator = type == AttachmentLocation.Attachmed ? "\r\n--#SEPERATOR1#" : "\r\n--#SEPERATOR2#";
-			buf.Length = 0;
-			foreach(MimeAttachment o in MailMessage.Attachments)
-			{									
-				MimeAttachment attachment = o;
-				if(attachment.Location != type)
-				{
-					continue;
-				}
+        /// <summary>
+        /// Send any attachments.
+        /// </summary>
+        /// <param name="buf">String work area.</param>
+        /// <param name="type">Attachment type to send.</param>
+        private void SendAttachments(StringBuilder buf, AttachmentLocation type)
+        {
+
+            //declare mime info for attachment
+            var fbuf = new byte[bufLen];
+            string seperator = type == AttachmentLocation.Attachmed ? "\r\n--#SEPERATOR1#" : "\r\n--#SEPERATOR2#";
+            buf.Length = 0;
+            foreach (MimeAttachment o in MailMessage.Attachments)
+            {
+                MimeAttachment attachment = o;
+                if (attachment.Location != type)
+                {
+                    continue;
+                }
 
                 Stream stream;
                 string fileName;
@@ -1066,45 +1098,47 @@ namespace AegisImplicitMail
                 {
                     stream = attachment.ContentStream;
                     fileName = attachment.Name;
-                } else {
+                }
+                else
+                {
                     stream = new FileStream(attachment.FileName, FileMode.Open, FileAccess.Read, FileShare.Read);
                     fileName = Path.GetFileName(attachment.FileName);
                 }
 
                 var cs = new CryptoStream(stream, new ToBase64Transform(), CryptoStreamMode.Read);
-				_con.SendCommand(seperator);
+                _con.SendCommand(seperator);
                 var escapedFileName = fileName.Replace(@"\", @"\\").Replace(@"""", @"\""");
-				buf.Append("Content-Type: ");
-				buf.Append(attachment.ContentType);
-				buf.Append("; name=\"");
-				buf.Append(escapedFileName);
+                buf.Append("Content-Type: ");
+                buf.Append(attachment.ContentType);
+                buf.Append("; name=\"");
+                buf.Append(escapedFileName);
                 buf.Append("\"");
-				_con.SendCommand(buf.ToString());
-				_con.SendCommand("Content-Transfer-Encoding: base64");
-				buf.Length = 0;
-				buf.Append("Content-Disposition: attachment; filename=\"");
-				buf.Append(escapedFileName);
+                _con.SendCommand(buf.ToString());
+                _con.SendCommand("Content-Transfer-Encoding: base64");
+                buf.Length = 0;
+                buf.Append("Content-Disposition: attachment; filename=\"");
+                buf.Append(escapedFileName);
                 buf.Append("\"");
-				_con.SendCommand(buf.ToString());
-				buf.Length = 0;
-				buf.Append("Content-ID: ");
+                _con.SendCommand(buf.ToString());
+                buf.Length = 0;
+                buf.Append("Content-ID: ");
                 var escapedContentId = "<" + (!string.IsNullOrEmpty(attachment.ContentId) ? attachment.ContentId : Path.GetFileNameWithoutExtension(fileName).Replace(" ", "-")) + ">";
                 buf.Append(escapedContentId);
-				buf.Append("\r\n");
-				_con.SendCommand(buf.ToString());								
-				buf.Length = 0;
-				int num = cs.Read(fbuf, 0, 2048);
+                buf.Append("\r\n");
+                _con.SendCommand(buf.ToString());
+                buf.Length = 0;
+                int num = cs.Read(fbuf, 0, bufLen);
                 char[] bufln = new char[2] { '\r', '\n' };
                 while (num > 0)
-				{					
-					_con.SendData(Encoding.ASCII.GetChars(fbuf, 0, num), 0, num);
+                {
+                    _con.SendData(Encoding.ASCII.GetChars(fbuf, 0, num), 0, num);
                     _con.SendData(bufln, 0, 2);
-                    num = cs.Read(fbuf, 0, 2048);
-				}
-				cs.Close();
-				_con.SendCommand("");
-			}
-		}
+                    num = cs.Read(fbuf, 0, bufLen);
+                }
+                cs.Close();
+                _con.SendCommand("");
+            }
+        }
 
         #endregion
         private string GetEncodedSubject()
@@ -1123,7 +1157,7 @@ namespace AegisImplicitMail
 
         private string GetEncodedBody()
         {
-            if (MailMessage.BodyEncoding.Equals(Encoding.ASCII)) 
+            if (MailMessage.BodyEncoding.Equals(Encoding.ASCII))
             {
                 return BodyToQuotedPrintable();
             }
@@ -1139,72 +1173,72 @@ namespace AegisImplicitMail
 		/// </summary>
 		/// <returns>The encoded body.</returns>
 		private string BodyToQuotedPrintable()
-		{
-//         var ENCODED = Encoding.UTF8.GetString(MailMessage.Body);
-			var stringBuilder = new StringBuilder();
-			sbyte currentByte;
-			foreach (char t in MailMessage.Body)
-			{
-			    currentByte = (sbyte) t;
-			    //is this a valid ascii character?
-			    if( ((currentByte >= 33) && (currentByte <= 60)) || ((currentByte >= 62) && (currentByte <= 126)) || (currentByte == '\r') || (currentByte == '\n') || (currentByte == '\t') || (currentByte == ' '))
-			    {
-			        stringBuilder.Append(t);
-			    }
-			    else
-			    {
-			        stringBuilder.Append('=');
-			        stringBuilder.Append(((sbyte)((currentByte & 0xF0) >> 4)).ToString("X"));
-			        stringBuilder.Append(((sbyte) (currentByte & 0x0F)).ToString("X"));
-			    }
-			}
-			//format data so that lines don't end with spaces (if so, add a trailing '='), etc.
-			//for more detail see RFC 2045.
-			int start = 0;
-			string encodedString = stringBuilder.ToString();
-			stringBuilder.Length = 0;
-			for(int x = 0; x < encodedString.Length; ++x)
-			{
-				currentByte = (sbyte) encodedString[x];
-				if(currentByte == '\n' || currentByte == '\r' || x == (encodedString.Length - 1))
-				{
-					stringBuilder.Append(encodedString.Substring(start, x - start + 1));
-					start = x + 1;
-					continue;
-				}
-				if((x - start) > 76)
-				{
-					bool inWord = true;
-					while(inWord)
-					{
-						inWord = (!char.IsWhiteSpace(encodedString, x) && encodedString[x-2] != '=');
-						if(inWord)
-						{
-							--x;
-//							currentByte = (sbyte) encodedString[x];
-						}
-						if(x == start)
-						{
-							x = start + 76;
-							break;
-						}
-					}
-					stringBuilder.Append(encodedString.Substring(start, x - start + 1));
-					stringBuilder.Append("=\r\n");
-					start = x + 1;
-				}
-			}
-			return stringBuilder.ToString();
-		}
-
-        public void Dispose()   
         {
-            if (_con!=null&& _con.Connected)
+            //         var ENCODED = Encoding.UTF8.GetString(MailMessage.Body);
+            var stringBuilder = new StringBuilder();
+            sbyte currentByte;
+            foreach (char t in MailMessage.Body)
+            {
+                currentByte = (sbyte)t;
+                //is this a valid ascii character?
+                if (((currentByte >= 33) && (currentByte <= 60)) || ((currentByte >= 62) && (currentByte <= 126)) || (currentByte == '\r') || (currentByte == '\n') || (currentByte == '\t') || (currentByte == ' '))
+                {
+                    stringBuilder.Append(t);
+                }
+                else
+                {
+                    stringBuilder.Append('=');
+                    stringBuilder.Append(((sbyte)((currentByte & 0xF0) >> 4)).ToString("X"));
+                    stringBuilder.Append(((sbyte)(currentByte & 0x0F)).ToString("X"));
+                }
+            }
+            //format data so that lines don't end with spaces (if so, add a trailing '='), etc.
+            //for more detail see RFC 2045.
+            int start = 0;
+            string encodedString = stringBuilder.ToString();
+            stringBuilder.Length = 0;
+            for (int x = 0; x < encodedString.Length; ++x)
+            {
+                currentByte = (sbyte)encodedString[x];
+                if (currentByte == '\n' || currentByte == '\r' || x == (encodedString.Length - 1))
+                {
+                    stringBuilder.Append(encodedString.Substring(start, x - start + 1));
+                    start = x + 1;
+                    continue;
+                }
+                if ((x - start) > 76)
+                {
+                    bool inWord = true;
+                    while (inWord)
+                    {
+                        inWord = (!char.IsWhiteSpace(encodedString, x) && encodedString[x - 2] != '=');
+                        if (inWord)
+                        {
+                            --x;
+                            //							currentByte = (sbyte) encodedString[x];
+                        }
+                        if (x == start)
+                        {
+                            x = start + 76;
+                            break;
+                        }
+                    }
+                    stringBuilder.Append(encodedString.Substring(start, x - start + 1));
+                    stringBuilder.Append("=\r\n");
+                    start = x + 1;
+                }
+            }
+            return stringBuilder.ToString();
+        }
+
+        public void Dispose()
+        {
+            if (_con != null && _con.Connected)
             {
                 _con.Close();
             }
-            if (_mailMessage!=null)
-            _mailMessage.Dispose();
+            if (_mailMessage != null)
+                _mailMessage.Dispose();
         }
 
         [Flags]
@@ -1220,13 +1254,13 @@ namespace AegisImplicitMail
         internal void ParseExtensions(string[] extensions)
         {
             int sizeOfAuthExtension = AuthExtension.Length;
-               
+
             var supportedAuth = SupportedAuth.None;
             foreach (string extension in extensions)
             {
                 var realextension = extension;
-                if (realextension.Length>3)
-                realextension = extension.Substring(4);
+                if (realextension.Length > 3)
+                    realextension = extension.Substring(4);
                 Console.Out.WriteLine("Extenstion :" + extension);
                 if (String.Compare(realextension, 0, AuthExtension, 0,
                     sizeOfAuthExtension, StringComparison.OrdinalIgnoreCase) == 0)
