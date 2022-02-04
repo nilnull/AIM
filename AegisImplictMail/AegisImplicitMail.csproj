@@ -4,7 +4,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>AIM</PackageId>
-    <PackageVersion>1.1.0</PackageVersion>
+    <PackageVersion>1.1.1</PackageVersion>
     <Authors>Araz Farhang Dareshuri</Authors>
     <Copyright>Copyright (c) 2020 Araz Farhang Dareshuri
 
