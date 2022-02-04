@@ -1049,7 +1049,10 @@ namespace AegisImplicitMail
 		{
             
 			//declare mime info for attachment
-			var fbuf = new byte[2048];
+		    int bufLen = 998; // to comply with RFC 5322 2.1.1. Line Length Limits
+
+            //declare mime info for attachment
+            var fbuf = new byte[bufLen];
 		    string seperator = type == AttachmentLocation.Attachmed ? "\r\n--#SEPERATOR1#" : "\r\n--#SEPERATOR2#";
 			buf.Length = 0;
 			foreach(MimeAttachment o in MailMessage.Attachments)
@@ -1093,13 +1096,13 @@ namespace AegisImplicitMail
 				buf.Append("\r\n");
 				_con.SendCommand(buf.ToString());								
 				buf.Length = 0;
-				int num = cs.Read(fbuf, 0, 2048);
+				int num = cs.Read(fbuf, 0, bufLen);
                 char[] bufln = new char[2] { '\r', '\n' };
                 while (num > 0)
 				{					
 					_con.SendData(Encoding.ASCII.GetChars(fbuf, 0, num), 0, num);
                     _con.SendData(bufln, 0, 2);
-                    num = cs.Read(fbuf, 0, 2048);
+                    num = cs.Read(fbuf, 0, bufLen);
 				}
 				cs.Close();
 				_con.SendCommand("");
