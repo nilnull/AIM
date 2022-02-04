@@ -27,7 +27,7 @@ namespace AegisImplicitMail
 
     /// <summary>
     /// Send Implicit Ssl and none Ssl Messages
-    /// </summary>s
+    /// </summary>
     public class SmtpSocketClient : IDisposable
     {
         private readonly object testConnectionLock = new object();
