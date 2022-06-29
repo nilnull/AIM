@@ -842,7 +842,7 @@ namespace AegisImplicitMail
                     _con.SendCommand(buf.ToString());
                     buf.Length = 0;
                     buf.Append(SmtpCommands.From);
-                    buf.Append(MailMessage.From);
+                    buf.Append(GetEncodedFrom((MimeMailAddress)MailMessage.From));
                     _con.SendCommand(buf.ToString());
                     buf.Length = 0;
                     buf.Append(SmtpCommands.To);
@@ -1125,6 +1125,22 @@ namespace AegisImplicitMail
         }
 
         #endregion
+
+        private string GetEncodedFrom(MimeMailAddress from)
+        {
+            Encoding displayNameEncoding = from.DisplayNameEncoding ?? Encoding.UTF8;
+            if (displayNameEncoding.Equals(Encoding.ASCII))
+            {
+                return from.ToString();
+            }
+            else
+            {
+                string encodingName = displayNameEncoding.BodyName.ToLower();
+                string encodedDisplayName = $"=?{encodingName}?B?{Convert.ToBase64String(displayNameEncoding.GetBytes(from.DisplayName))}?= <{from.Address}>";
+                return encodedDisplayName;
+            }
+        }
+
         private string GetEncodedSubject()
         {
             var subjectEncoding = MailMessage.SubjectEncoding ?? Encoding.UTF8;

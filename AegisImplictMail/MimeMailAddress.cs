@@ -5,6 +5,8 @@ namespace AegisImplicitMail
 {
     public class MimeMailAddress : MailAddress, IMailAddress
     {
+        public Encoding DisplayNameEncoding { private set; get; }
+
         public MimeMailAddress(string address) : base(address)
         {
         }
@@ -15,6 +17,7 @@ namespace AegisImplicitMail
 
         public MimeMailAddress(string address, string displayName, Encoding displayNameEncoding) : base(address, displayName, displayNameEncoding)
         {
+            DisplayNameEncoding = displayNameEncoding;
         }
     }
 }
