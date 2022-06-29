@@ -1092,38 +1092,19 @@ namespace AegisImplicitMail
                     continue;
                 }
 
-                Stream stream;
-                string fileName;
-                if (string.IsNullOrEmpty(attachment.FileName))
-                {
-                    stream = attachment.ContentStream;
-                    fileName = attachment.Name;
-                }
-                else
-                {
-                    stream = new FileStream(attachment.FileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    fileName = Path.GetFileName(attachment.FileName);
-                }
-
-                var cs = new CryptoStream(stream, new ToBase64Transform(), CryptoStreamMode.Read);
+                var cs = new CryptoStream(attachment.ContentStream, new ToBase64Transform(), CryptoStreamMode.Read);
                 _con.SendCommand(seperator);
-                var escapedFileName = fileName.Replace(@"\", @"\\").Replace(@"""", @"\""");
                 buf.Append("Content-Type: ");
                 buf.Append(attachment.ContentType);
-                buf.Append("; name=\"");
-                buf.Append(escapedFileName);
-                buf.Append("\"");
                 _con.SendCommand(buf.ToString());
                 _con.SendCommand("Content-Transfer-Encoding: base64");
                 buf.Length = 0;
-                buf.Append("Content-Disposition: attachment; filename=\"");
-                buf.Append(escapedFileName);
-                buf.Append("\"");
+                buf.Append("Content-Disposition: attachment; filename=");
+                buf.Append(attachment.GetEncodedAttachmentName());
                 _con.SendCommand(buf.ToString());
                 buf.Length = 0;
                 buf.Append("Content-ID: ");
-                var escapedContentId = "<" + (!string.IsNullOrEmpty(attachment.ContentId) ? attachment.ContentId : Path.GetFileNameWithoutExtension(fileName).Replace(" ", "-")) + ">";
-                buf.Append(escapedContentId);
+                buf.Append(attachment.ContentId);
                 buf.Append("\r\n");
                 _con.SendCommand(buf.ToString());
                 buf.Length = 0;

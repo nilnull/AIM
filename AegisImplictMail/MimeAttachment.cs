@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net.Mail;
 using System.Net.Mime;
+using System.Text;
 
 namespace AegisImplicitMail
 {
@@ -16,9 +17,10 @@ namespace AegisImplicitMail
         internal static int AttachCount;
         private AttachmentLocation _location;
         /// <summary>
-        /// File to send.
+        /// Attachment is a File Stream
         /// </summary>
-        public string FileName { get; set; }
+        public bool isFileStream { get; private set; } = false;
+
         /// <summary>
         /// Content type of file (application/octet-stream for regular attachments).
         /// </summary>
@@ -48,74 +50,106 @@ namespace AegisImplicitMail
             }
         }
 
+        public string GetEncodedAttachmentName()
+        {
+            Encoding displayNameEncoding = this.NameEncoding ?? Encoding.UTF8;
+            if (displayNameEncoding.Equals(Encoding.ASCII))
+            {
+                return this.ContentType.Name;
+            }
+            else
+            {
+                string encodingName = displayNameEncoding.BodyName.ToLower();
+                string encodedName = $"=?{encodingName}?B?{Convert.ToBase64String(displayNameEncoding.GetBytes(this.ContentType.Name))}?=";
+                return encodedName;
+            }
+        }
+
         #endregion
 
         #region Constructors
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
-        //		public SmtpAttachment():base(){}
 
         /// <summary>
-        /// Constructor for passing all information at once.
+        /// Initializes a new instance of the AegisImplicitMail.MimeAttachment class with the specified 
+        /// content string.
         /// </summary>
-        /// <param name="fileName">File to send.</param>
-        /// <param name="contentType">Content type of file (application/octet-stream for regular attachments.)</param>
-        /// <param name="location">Where to put the attachment.</param>
-        public MimeAttachment(string fileName, ContentType contentType, AttachmentLocation location)
+        /// <param name="fileName">A System.String that contains a file path to use to create this attachment</param>
+        /// <param name="location">Attached or Inline</param>
+        public MimeAttachment(string fileName, AttachmentLocation location = AttachmentLocation.Attachmed)
             : base(fileName)
         {
-            if (string.IsNullOrEmpty(fileName))
-            {
-                throw new ArgumentException(nameof(fileName));
-            }
-            FileName = fileName;
-            ContentType = contentType;
             Location = location;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the AegisImplicitMail.MimeAttachment class with the specified
+        /// content string and System.Net.Mime.ContentType.
+        /// </summary>
+        /// <param name="fileName">A System.String that contains a file path to use to create this attachment.</param>
+        /// <param name="contentType">A System.Net.Mime.ContentType that describes the data in string.</param>
+        /// <param name="location">Attached or Inline</param>
+        public MimeAttachment(string fileName, ContentType contentType, AttachmentLocation location = AttachmentLocation.Attachmed)
+            : base(fileName, contentType)
+        {
+            Location = location;
+        }
 
         /// <summary>
-        /// Shortcut constructor for passing regular style attachments.
+        /// Initializes a new instance of the AegisImplicitMail.MimeAttachment class with the specified
+        /// stream and name.
         /// </summary>
-        /// <param name="filename">File to send.</param>
-        public MimeAttachment(string filename)
-            : this(filename, new ContentType(MediaTypeNames.Application.Octet), AttachmentLocation.Attachmed)
+        /// <param name="contentStream">A readable System.IO.Stream that contains the content for this attachment.</param>
+        /// <param name="name">
+        /// A System.String that contains the value for the System.Net.Mime.ContentType.Name
+        /// property of the System.Net.Mime.ContentType associated with this attachment.
+        /// To ensure compatibility with the most number of email providers, this value cannot be null.
+        /// </param>
+        /// <param name="location">Attached or Inline</param>
+        public MimeAttachment(Stream contentStream, string name, AttachmentLocation location = AttachmentLocation.Attachmed) 
+            : base(contentStream, name)
         {
+            isFileStream = true;
+            Location = location;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the AegisImplicitMail.MimeAttachment class with the specified
+        /// stream and content type.
+        /// </summary>
+        /// <param name="contentStream"> A readable System.IO.Stream that contains the content for this attachment.</param>
+        /// <param name="contentType">A System.Net.Mime.ContentType that describes the data in stream.</param>
+        /// <param name="location">Attached or Inline</param>
+        public MimeAttachment(Stream contentStream, ContentType contentType, AttachmentLocation location = AttachmentLocation.Attachmed)
+            :base(contentStream, contentType) 
+        {
+            isFileStream = true;
+            Location = location;
         }
 
         /// <summary>
         /// Constructor for passing stream attachments.
-        /// </summary>
-        /// <param name="contentStream">Stream to the attachment contents</param>
-        /// <param name="name">Name of the attachment as it will appear on the e-mail</param>
-        /// <param name="contentStream">Where to put the attachment</param>
-        public MimeAttachment(Stream contentStream, string name, AttachmentLocation location = AttachmentLocation.Attachmed)
-            :this(contentStream, name, new ContentType(MediaTypeNames.Application.Octet), location)
-        {
-        }
-
-        /// <summary>
-        /// Constructor for passing stream attachments.
+        /// This constructor has no equivalent in System.Net.Mail.Attachment constructors.
+        /// Stays here for compatibility reasons.
         /// </summary>
         /// <param name="contentStream">Stream to the attachment contents</param>
         /// <param name="name">Name of the attachment as it will appear on the e-mail</param>
         /// <param name="contentType">Content type of the attachment</param>
-        /// <param name="contentStream">Where to put the attachment</param>
+        /// <param name="location">Attached or Inline</param>
         public MimeAttachment(Stream contentStream, string name, ContentType contentType, AttachmentLocation location = AttachmentLocation.Attachmed)
-            : base(contentStream, name)
+            : this(contentStream, name)
         {
+            isFileStream = true;
             Location = location;
-            ContentType = contentType;
+            ContentType.Name = name;
         }
 
         /// <summary>
         /// Show this attachment.
         /// </summary>
-        /// <returns>The file name of the attachment.</returns>
+        /// <returns>The name of the attachment.</returns>
         public override string ToString()
         {
-            return FileName;
+            return this.ContentType.Name;
         }
     
     }
