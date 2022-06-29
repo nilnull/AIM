@@ -285,8 +285,10 @@ namespace AegisImplicitMail
                 var result = EstablishSmtp();
                 string response;
                 int code;
-                if (_con != null)
+                if (_con != null && _con.Connected)
                     QuiteConnection(out response, out code);
+                
+                InCall = false;
                 return result;
             }
         }
@@ -912,6 +914,7 @@ namespace AegisImplicitMail
                         SendCompleted(this, new AsyncCompletedEventArgs(null, false, response));
                     }
                 }
+                InCall = false;
             }
         }
 
