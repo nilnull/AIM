@@ -106,7 +106,17 @@ namespace AegisImplicitMail
         /// <summary>
         ///     PlainText text authentication is used.
         /// </summary>
-        PlainText = 1
+        PlainText = 1,
+
+        /// <summary>
+        ///     XOAUTH2 authentication is used.
+        /// </summary>
+        Xoauth2 = 2,
+
+        /// <summary>
+        ///     OAUTHBEARER authentication is used.
+        /// </summary>
+        Oauthbearer = 3,
     }
 
 

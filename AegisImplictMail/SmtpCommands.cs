@@ -19,6 +19,8 @@ namespace AegisImplicitMail
             internal const string Auth = ("AUTH ");
             internal const string AuthPlian = "PLAIN";
             internal const string AuthLogin = "LOGIN";
+            internal const string AuthXoauth2 = "XOAUTH2";
+            internal const string AuthOauthbearer = "OAUTHBEARER";
 
             internal const string Data = ("DATA");
             internal const string Date = ("DATE: ");

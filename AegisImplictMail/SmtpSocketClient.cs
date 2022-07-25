@@ -37,6 +37,7 @@ namespace AegisImplicitMail
 
         const int bufLen = 998; // to comply with RFC 5322 2.1.1. Line Length Limits
         private const string Gap = " ";
+        private const char SOH = '\x01'; // ^A (Start of Heading)
         const string AuthGssapi = "gssapi";
         const string AuthWDigest = "wdigest";
 
@@ -271,7 +272,7 @@ namespace AegisImplicitMail
                     if (string.IsNullOrWhiteSpace(_password))
                     {
                         throw new ArgumentException(
-                            "You must specify password when you are not using default credentials");
+                            "You must specify password or access token when you are not using default credentials");
                     }
                 }
 
@@ -470,6 +471,36 @@ namespace AegisImplicitMail
                             }
                             QuiteConnection(out response, out code);
                             return false;
+                        }
+                        break;
+
+                    case AuthenticationType.Xoauth2:
+                        if(!AuthenticateAsXoauth2(out response, out code))
+                        {
+                            if (code == (int)SmtpResponseCodes.SyntaxError)
+                            {
+                                if (SendCompleted != null)
+                                {
+                                    SendCompleted(this,
+                                        new AsyncCompletedEventArgs(
+                                         new ServerException("Service Does not support XOAUTH2 mechanism. Please check authentification type"), true, response));
+                                }
+                            }
+                        }
+                        break;
+
+                    case AuthenticationType.Oauthbearer:
+                        if (!AuthenticateAsOAuthBearer(out response, out code))
+                        {
+                            if (code == (int)SmtpResponseCodes.SyntaxError)
+                            {
+                                if (SendCompleted != null)
+                                {
+                                    SendCompleted(this,
+                                        new AsyncCompletedEventArgs(
+                                         new ServerException("Service Does not support OAuthBearer mechanism. Please check authentification type"), true, response));
+                                }
+                            }
                         }
                         break;
                 }
@@ -751,7 +782,7 @@ namespace AegisImplicitMail
                     if (string.IsNullOrWhiteSpace(_password))
                     {
                         throw new ArgumentException(
-                            "You must specify password when you are not using defualt credentials");
+                            "You must specify password or access token when you are not using defualt credentials");
                     }
                 }
 
@@ -1048,7 +1079,45 @@ namespace AegisImplicitMail
             return false;
         }
 
+        private bool AuthenticateAsXoauth2(out string response, out int code)
+        {
+            _con.SendCommand(SmtpCommands.Auth + SmtpCommands.AuthXoauth2);
+            _con.GetReply(out response, out code);
+            if (code == (int)SmtpResponseCodes.SyntaxError)
+            {
+                return false;
+            }
 
+            string challenge = $"user={_user}{SOH}auth=Bearer {_password}{SOH}{SOH}";
+            _con.SendCommand(Convert.ToBase64String(Encoding.ASCII.GetBytes(challenge)));
+
+            _con.GetReply(out response, out code);
+            Console.Out.WriteLine("Reply to XOauth2 2: " + response + " Code :" + code);
+
+            if (code == (int)SmtpResponseCodes.AuthenticationSuccessfull)
+                return true;
+            return false;
+        }
+
+        private bool AuthenticateAsOAuthBearer(out string response, out int code)
+        {
+            _con.SendCommand(SmtpCommands.Auth + SmtpCommands.AuthOauthbearer);
+            _con.GetReply(out response, out code);
+            if (code == (int)SmtpResponseCodes.SyntaxError)
+            {
+                return false;
+            }
+
+            string challenge = $"n,a={_user},{SOH}host={_host}{SOH}port={_port}{SOH}auth=Bearer {_password}{SOH}{SOH}";
+            _con.SendCommand(Convert.ToBase64String(Encoding.ASCII.GetBytes(challenge)));
+
+            _con.GetReply(out response, out code);
+            Console.Out.WriteLine("Reply to OAuthBearer 2: " + response + " Code :" + code);
+
+            if (code == (int)SmtpResponseCodes.AuthenticationSuccessfull)
+                return true;
+            return false;
+        }
 
         private void QuiteConnection(out string response, out int code)
         {
@@ -1249,6 +1318,8 @@ namespace AegisImplicitMail
             NTLM = 2,
             GSSAPI = 4,
             WDigest = 8,
+            XOAUTH2 = 10,
+            OAUTHBEARER = 12,
         }
 
         internal void ParseExtensions(string[] extensions)
@@ -1290,6 +1361,14 @@ namespace AegisImplicitMail
                             supportedAuth |= SupportedAuth.WDigest;
                         }
 #endif // FEATURE_PAL
+                        else if (String.Compare(authType, SmtpCommands.AuthXoauth2, StringComparison.OrdinalIgnoreCase) == 0)
+                        {
+                            supportedAuth |= SupportedAuth.XOAUTH2;
+                        }
+                        else if (String.Compare(authType, SmtpCommands.AuthOauthbearer, StringComparison.OrdinalIgnoreCase) == 0)
+                        {
+                            supportedAuth |= SupportedAuth.OAUTHBEARER;
+                        }
                     }
                 }
                 else if (String.Compare(realextension, 0, "dsn ", 0, 3, StringComparison.OrdinalIgnoreCase) == 0)
