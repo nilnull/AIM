@@ -873,26 +873,26 @@ namespace AegisImplicitMail
                     _con.SendCommand(buf.ToString());
                     buf.Length = 0;
                     buf.Append(SmtpCommands.From);
-                    buf.Append(GetEncodedFrom((MimeMailAddress)MailMessage.From));
+                    buf.Append(GetEncodedMailAddress(MailMessage.From));
                     _con.SendCommand(buf.ToString());
                     buf.Length = 0;
                     buf.Append(SmtpCommands.To);
-                    buf.Append(MailMessage.To[0]);
+                    buf.Append(GetEncodedMailAddress(MailMessage.To[0]));
                     for (int x = 1; x < MailMessage.To.Count; ++x)
                     {
                         buf.Append(";");
-                        buf.Append(MailMessage.To[x]);
+                        buf.Append(GetEncodedMailAddress(MailMessage.To[x]));
                     }
                     _con.SendCommand(buf.ToString());
                     if (MailMessage.CC.Count > 0)
                     {
                         buf.Length = 0;
                         buf.Append(SmtpCommands.Cc);
-                        buf.Append(MailMessage.CC[0]);
+                        buf.Append(GetEncodedMailAddress(MailMessage.CC[0]));
                         for (int x = 1; x < MailMessage.CC.Count; ++x)
                         {
                             buf.Append(";");
-                            buf.Append(MailMessage.CC[x]);
+                            buf.Append(GetEncodedMailAddress(MailMessage.CC[x]));
                         }
                         _con.SendCommand(buf.ToString());
                     }
@@ -900,11 +900,11 @@ namespace AegisImplicitMail
                     {
                         buf.Length = 0;
                         buf.Append(SmtpCommands.Bcc);
-                        buf.Append(MailMessage.Bcc[0]);
+                        buf.Append(GetEncodedMailAddress(MailMessage.Bcc[0]));
                         for (int x = 1; x < MailMessage.Bcc.Count; ++x)
                         {
                             buf.Append(";");
-                            buf.Append(MailMessage.Bcc[x]);
+                            buf.Append(GetEncodedMailAddress(MailMessage.Bcc[x]));
                         }
                         _con.SendCommand(buf.ToString());
                     }
@@ -915,7 +915,7 @@ namespace AegisImplicitMail
                         {
                             buf.Length = 0;
                             buf.Append(SmtpCommands.ReplyTo);
-                            buf.Append(replyToAdr);
+                            buf.Append(GetEncodedMailAddress(replyToAdr));
                             _con.SendCommand(buf.ToString());
                         }
                     }
@@ -1195,17 +1195,17 @@ namespace AegisImplicitMail
 
         #endregion
 
-        private string GetEncodedFrom(MimeMailAddress from)
+        private string GetEncodedMailAddress(MailAddress address)
         {
-            Encoding displayNameEncoding = from.DisplayNameEncoding ?? Encoding.UTF8;
-            if (displayNameEncoding.Equals(Encoding.ASCII))
+            Encoding headersEncoding = MailMessage.HeadersEncoding ?? Encoding.UTF8;
+            if (headersEncoding.Equals(Encoding.ASCII))
             {
-                return from.ToString();
+                return address.ToString();
             }
             else
             {
-                string encodingName = displayNameEncoding.BodyName.ToLower();
-                string encodedDisplayName = $"=?{encodingName}?B?{Convert.ToBase64String(displayNameEncoding.GetBytes(from.DisplayName))}?= <{from.Address}>";
+                string encodingName = headersEncoding.BodyName.ToLower();
+                string encodedDisplayName = $"=?{encodingName}?B?{Convert.ToBase64String(headersEncoding.GetBytes(address.DisplayName))}?= <{address.Address}>";
                 return encodedDisplayName;
             }
         }
