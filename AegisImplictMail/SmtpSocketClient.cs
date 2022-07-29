@@ -867,6 +867,17 @@ namespace AegisImplicitMail
                     _con.GetReply(out response, out code);
                     if (!ParseData(code, response)) return;
                     _con.SendCommand("X-Mailer: AIM.MimeMailer");
+                    _con.SendCommand($"Message-ID: <{Guid.NewGuid()}@{_host}>");
+                    Encoding headersEncoding = MailMessage.HeadersEncoding ?? Encoding.UTF8;
+                    if (headersEncoding.Equals(Encoding.ASCII))
+                        foreach (string header in MailMessage.Headers.AllKeys)
+                            _con.SendCommand($"{header}: {MailMessage.Headers[header]}");
+                    else
+                    {
+                        string encodingName = headersEncoding.BodyName.ToLower();
+                        foreach (string header in MailMessage.Headers.AllKeys)
+                            _con.SendCommand($"{header}: =?{encodingName}?B?{Convert.ToBase64String(MailMessage.HeadersEncoding.GetBytes(MailMessage.Headers[header]))}?=");
+                    }
                     DateTime today = DateTime.UtcNow;
                     buf.Append(SmtpCommands.Date);
                     buf.Append(today.ToString("r"));
